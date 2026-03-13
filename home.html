@@ -459,6 +459,37 @@
     .parcial-item:last-child { border-bottom: none; }
     .parcial-pts { font-weight: 700; font-size: 16px; color: #1a6b3c; }
     .parcial-pts.negativo { color: #c0392b; }
+
+    /* Novo estilo para o aviso de vinculação da Globo */
+    .aviso-globo {
+      background: #e7f3ff;
+      border-left: 4px solid #1a6b3c;
+      padding: 12px;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .aviso-globo p {
+      font-size: 14px;
+      color: #1a1a1a;
+    }
+    .btn-conectar {
+      background: #1a6b3c;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .btn-conectar:hover {
+      background: #145a32;
+    }
   </style>
 </head>
 <body>
@@ -483,6 +514,9 @@
   </nav>
 
   <main>
+
+    <!-- Área para aviso de vinculação da Globo -->
+    <div id="aviso-globo-container" style="display: none;"></div>
 
     <!-- MEU TIME -->
     <div class="pagina ativa" id="pagina-meu-time">
@@ -611,6 +645,9 @@
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
     const PROXY = 'https://josabet-proxy.onrender.com';
+    // ⚠️ Substitua 'SEU_CLIENT_ID_AQUI' pelo client_id obtido no desenvolvedores.globo.com
+    const GLOBO_CLIENT_ID = 'SEU_CLIENT_ID_AQUI'; 
+    const GLOBO_REDIRECT_URI = `${PROXY}/globo-callback`;
 
     const firebaseConfig = {
       apiKey: "AIzaSyCoegwWC-xT7nXHQCwOCf2oM2IzYXODA8o",
@@ -628,12 +665,61 @@
     let mercadoCompleto = [];
     let posicaoFiltro = 'todos';
 
+    // ========== NOVAS FUNÇÕES PARA VÍNCULO COM GLOBO ==========
+    async function verificarVinculoGlobo() {
+      if (!tokenAtual) return;
+      try {
+        const res = await fetch(`${PROXY}/user/globo-status`, {
+          headers: { 'Authorization': `Bearer ${tokenAtual}` }
+        });
+        const data = await res.json();
+        const container = document.getElementById('aviso-globo-container');
+        if (!data.vinculado) {
+          container.style.display = 'block';
+          container.innerHTML = `
+            <div class="aviso-globo">
+              <p>🔗 Para ver os dados do Cartola, conecte sua conta Globo.</p>
+              <button class="btn-conectar" onclick="abrirLoginGlobo()">Conectar Conta Globo</button>
+            </div>
+          `;
+        } else {
+          container.style.display = 'none';
+        }
+      } catch (e) {
+        console.log('Erro ao verificar vínculo Globo:', e);
+      }
+    }
+
+    window.abrirLoginGlobo = function() {
+      if (!GLOBO_CLIENT_ID || GLOBO_CLIENT_ID === 'SEU_CLIENT_ID_AQUI') {
+        alert('Client ID da Globo não configurado. Obtenha seu client_id em developers.globo.com');
+        return;
+      }
+      const url = `https://login.globo.com/api/authorization?client_id=${GLOBO_CLIENT_ID}&redirect_uri=${encodeURIComponent(GLOBO_REDIRECT_URI)}&response_type=code`;
+      const popup = window.open(url, 'loginGlobo', 'width=600,height=700');
+    };
+
+    // Ouvinte para mensagens do proxy (quando o login Globo terminar)
+    window.addEventListener('message', function(event) {
+      if (event.origin === PROXY) {
+        if (event.data.success) {
+          // Esconde o aviso e recarrega os dados
+          document.getElementById('aviso-globo-container').style.display = 'none';
+          carregarDados();
+        } else {
+          alert('Falha ao conectar conta Globo. Tente novamente.');
+        }
+      }
+    });
+    // ===========================================================
+
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         document.getElementById('user-nome').textContent = user.displayName;
         document.getElementById('user-foto').src = user.photoURL || 'https://via.placeholder.com/32';
         tokenAtual = await user.getIdToken();
         carregarDados();
+        verificarVinculoGlobo(); // <-- chama a verificação após carregar dados iniciais
       } else {
         window.location.href = 'index.html';
       }
