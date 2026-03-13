@@ -164,9 +164,9 @@
 
   window.loginGoogle = async function() {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      alert(`Bem vindo, ${user.displayName}!`);
+const result = await signInWithPopup(auth, googleProvider);
+const user = result.user;
+window.location.href = 'home.html';
     } catch (error) {
       alert('Erro ao fazer login: ' + error.message);
     }
@@ -178,4 +178,5 @@
 </script>
 
 </body>
+
 </html>
