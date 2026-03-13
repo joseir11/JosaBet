@@ -136,14 +136,6 @@
         Continuar com Google
       </button>
 
-      <button class="btn" onclick="loginFacebook()">
-        <svg class="btn-icon" viewBox="0 0 24 24">
-          <rect width="24" height="24" rx="6" fill="#1877F2"/>
-          <path fill="white" d="M16 8h-2a1 1 0 0 0-1 1v2h3l-.5 3H13v7h-3v-7H8v-3h2V9a4 4 0 0 1 4-4h2v3z"/>
-        </svg>
-        Continuar com Facebook
-      </button>
-
       <div class="loading" id="loading">Entrando... aguarde 😄</div>
     </div>
 
@@ -157,7 +149,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCoegwWC-xT7nXHQCwOCf2oM2IzYXODA8o",
@@ -171,7 +163,6 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const googleProvider = new GoogleAuthProvider();
-    const facebookProvider = new FacebookAuthProvider();
 
     // Se já está logado, vai direto para home
     onAuthStateChanged(auth, (user) => {
@@ -180,14 +171,14 @@
       }
     });
 
-    async function fazerLogin(provider) {
+    window.loginGoogle = async () => {
       const loading = document.getElementById('loading');
       const erro = document.getElementById('erro');
       loading.style.display = 'block';
       erro.style.display = 'none';
 
       try {
-        const result = await signInWithPopup(auth, provider);
+        const result = await signInWithPopup(auth, googleProvider);
         const token = await result.user.getIdToken();
         localStorage.setItem('josabet_token', token);
         localStorage.setItem('josabet_user', JSON.stringify({
@@ -197,21 +188,12 @@
         }));
         window.location.href = 'home.html';
       } catch (error) {
-  loading.style.display = 'none';
-  erro.style.display = 'block';
-  
-  if (error.code === 'auth/account-exists-with-different-credential') {
-    erro.textContent = 'Este e-mail já está cadastrado com Google. Faça login com Google primeiro.';
-  } else {
-    erro.textContent = 'Erro ao fazer login: ' + error.message;
-  }
-  
-  console.error(error);
-}
-    }
-
-    window.loginGoogle = () => fazerLogin(googleProvider);
-    window.loginFacebook = () => fazerLogin(facebookProvider);
+        loading.style.display = 'none';
+        erro.style.display = 'block';
+        erro.textContent = 'Erro ao fazer login: ' + error.message;
+        console.error(error);
+      }
+    };
   </script>
 
 </body>
