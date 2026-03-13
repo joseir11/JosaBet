@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JosaBet - Home</title>
   <style>
-    /* (mantenha todo o estilo que você já tem – igual ao anterior) */
+    /* (TODO o estilo que você já tem – igual ao anterior) */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -396,7 +396,7 @@
     .parcial-item:last-child { border-bottom: none; }
     .parcial-pts { font-weight: 700; font-size: 16px; color: #1a6b3c; }
     .parcial-pts.negativo { color: #c0392b; }
-    /* Nenhum aviso visual – tudo automático */
+    .aviso { background: #e7f3ff; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -420,7 +420,7 @@
   </nav>
 
   <main>
-    <!-- MEU TIME -->
+    <!-- MEU TIME (sem dados reais) -->
     <div class="pagina ativa" id="pagina-meu-time">
       <div class="cards-resumo">
         <div class="card-resumo">
@@ -436,61 +436,9 @@
           <div class="label">Posição na liga</div>
         </div>
       </div>
-
       <div class="secao">
-        <h2>⚽ Meu Time</h2>
-        <div class="campo-wrapper">
-          <div class="campo">
-            <div class="marcacoes">
-              <div class="borda-interna"></div>
-              <div class="linha-meio"></div>
-              <div class="circulo-centro"></div>
-              <div class="ponto-centro"></div>
-              <div class="area-grande-baixo"></div>
-              <div class="area-grande-cima"></div>
-              <div class="area-pequena-baixo"></div>
-              <div class="area-pequena-cima"></div>
-              <div class="gol-baixo"></div>
-              <div class="gol-cima"></div>
-              <div class="canto tl"></div>
-              <div class="canto tr"></div>
-              <div class="canto bl"></div>
-              <div class="canto br"></div>
-            </div>
-
-            <div class="linha" id="linha-atacantes">
-              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Atacante</div><div class="jogador-pts">0 pts</div></div>
-              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Atacante</div><div class="jogador-pts">0 pts</div></div>
-              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Atacante</div><div class="jogador-pts">0 pts</div></div>
-            </div>
-
-            <div class="linha" id="linha-meias">
-              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Meia</div><div class="jogador-pts">0 pts</div></div>
-              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Meia</div><div class="jogador-pts">0 pts</div></div>
-              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Meia</div><div class="jogador-pts">0 pts</div></div>
-            </div>
-
-            <div class="linha" id="linha-defensores">
-              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Lateral</div><div class="jogador-pts">0 pts</div></div>
-              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Zagueiro</div><div class="jogador-pts">0 pts</div></div>
-              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Zagueiro</div><div class="jogador-pts">0 pts</div></div>
-              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Lateral</div><div class="jogador-pts">0 pts</div></div>
-            </div>
-
-            <div class="linha-tec-gol">
-              <div class="jogador tecnico">
-                <div class="jogador-circulo"><img src="tec.png" /></div>
-                <div class="jogador-nome">Técnico</div>
-                <div class="jogador-pts">0 pts</div>
-              </div>
-              <div class="jogador">
-                <div class="jogador-circulo"><img src="gol.png" /></div>
-                <div class="jogador-nome">Goleiro</div>
-                <div class="jogador-pts">0 pts</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <h2>⚽ Meu Time (simulação)</h2>
+        <p class="loading-msg">Dados do seu time ainda não disponíveis sem autenticação.</p>
       </div>
     </div>
 
@@ -536,10 +484,14 @@
     <div class="pagina" id="pagina-liga">
       <div class="secao">
         <h2>🏆 Minha Liga</h2>
-        <div id="lista-liga"><div class="loading-msg">Carregando liga...</div></div>
+        <div class="aviso">
+          <p>Escolha uma das suas ligas:</p>
+          <button onclick="carregarLiga('d5rp3vak58ms73eri3d0')">Liga Pontos Corridos</button>
+          <button onclick="carregarLiga('taca-nattos')">Liga Taça Nattos</button>
+        </div>
+        <div id="lista-liga"><div class="loading-msg">Selecione uma liga acima.</div></div>
       </div>
     </div>
-
   </main>
 
   <script type="module">
@@ -547,9 +499,6 @@
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
     const PROXY = 'https://josabet-proxy.onrender.com';
-    // 🔁 Substitua pelo seu client_id real da Globo (obtenha em developers.globo.com)
-    const GLOBO_CLIENT_ID = 'SEU_CLIENT_ID_AQUI'; 
-    const GLOBO_REDIRECT_URI = `${PROXY}/globo-callback`;
 
     const firebaseConfig = {
       apiKey: "AIzaSyCoegwWC-xT7nXHQCwOCf2oM2IzYXODA8o",
@@ -566,78 +515,64 @@
     let tokenAtual = '';
     let mercadoCompleto = [];
     let posicaoFiltro = 'todos';
-    let vinculoVerificado = false; // evita abrir popup múltiplas vezes
-
-    // ========== FUNÇÃO QUE ABRE O POPUP DA GLOBO AUTOMATICAMENTE ==========
-    async function verificarEConectarGlobo() {
-      if (!tokenAtual || vinculoVerificado) return;
-      vinculoVerificado = true; // impede de tentar novamente no mesmo carregamento
-
-      try {
-        const res = await fetch(`${PROXY}/user/globo-status`, {
-          headers: { 'Authorization': `Bearer ${tokenAtual}` }
-        });
-        const data = await res.json();
-        if (!data.vinculado) {
-          // Abre o popup automaticamente, sem perguntar
-          if (!GLOBO_CLIENT_ID || GLOBO_CLIENT_ID === 'SEU_CLIENT_ID_AQUI') {
-            console.warn('Client ID da Globo não configurado. Os dados do Cartola não aparecerão.');
-            return;
-          }
-          const url = `https://login.globo.com/api/authorization?client_id=${GLOBO_CLIENT_ID}&redirect_uri=${encodeURIComponent(GLOBO_REDIRECT_URI)}&response_type=code`;
-          window.open(url, 'loginGlobo', 'width=600,height=700');
-        }
-      } catch (e) {
-        console.log('Erro ao verificar vínculo Globo:', e);
-      }
-    }
-
-    // Quando o proxy terminar o login Globo, ele envia uma mensagem para esta janela
-    window.addEventListener('message', function(event) {
-      if (event.origin === PROXY) {
-        if (event.data.success) {
-          // Recarrega os dados do Cartola (agora com token válido)
-          carregarDados();
-        } else {
-          alert('Não foi possível conectar à Conta Globo. Tente novamente mais tarde.');
-        }
-      }
-    });
-    // ========================================================================
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         document.getElementById('user-nome').textContent = user.displayName;
         document.getElementById('user-foto').src = user.photoURL || 'https://via.placeholder.com/32';
         tokenAtual = await user.getIdToken();
-        carregarDados();
-        // Chama a verificação automática após carregar os dados
-        verificarEConectarGlobo();
+        carregarDadosIniciais();
       } else {
         window.location.href = 'index.html';
       }
     });
 
-    async function carregarDados() {
-      carregarTime();
-      carregarPartidas();
+    async function carregarDadosIniciais() {
       carregarMercado();
+      carregarPartidas();
       carregarParciais();
     }
 
-    async function carregarTime() {
+    // ========== MERCADO ==========
+    async function carregarMercado() {
       try {
-        const res = await fetch(`${PROXY}/time`, {
+        const res = await fetch(`${PROXY}/mercado`, {
           headers: { 'Authorization': `Bearer ${tokenAtual}` }
         });
         const data = await res.json();
         if (data && data.atletas) {
-          document.getElementById('pontos-rodada').textContent = (data.pontos || 0).toFixed(1);
-          document.getElementById('patrimonio').textContent = `C$ ${(data.patrimonio || 100).toFixed(0)}`;
+          mercadoCompleto = data.atletas.map(a => ({
+            ...a,
+            clube: data.clubes[a.clube_id]?.abreviacao || '',
+            posicao: data.posicoes[a.posicao_id]?.abreviacao || ''
+          }));
+          renderizarMercado(mercadoCompleto);
         }
-      } catch (e) { console.log('Erro ao carregar time:', e); }
+      } catch (e) {
+        document.getElementById('lista-mercado').innerHTML = '<div class="loading-msg">Erro ao carregar mercado.</div>';
+      }
     }
 
+    function renderizarMercado(atletas) {
+      const lista = document.getElementById('lista-mercado');
+      if (!atletas || atletas.length === 0) {
+        lista.innerHTML = '<div class="loading-msg">Nenhum jogador encontrado.</div>';
+        return;
+      }
+      const posClasse = { 'gol': 'pos-gol', 'lat': 'pos-lat', 'zag': 'pos-zag', 'mei': 'pos-mei', 'ata': 'pos-ata', 'tec': 'pos-tec' };
+      lista.innerHTML = atletas.slice(0, 50).map(a => `
+        <div class="jogador-mercado">
+          <div class="jogador-foto"><img src="${a.foto || 'jogador.png'}" onerror="this.src='jogador.png'" /></div>
+          <div class="jogador-info">
+            <div class="nome">${a.apelido || a.nome || 'Jogador'}</div>
+            <div class="clube">${a.clube || '-'} · <span class="posicao-badge ${posClasse[a.posicao] || 'pos-gol'}">${a.posicao?.toUpperCase() || '?'}</span></div>
+          </div>
+          <div class="jogador-preco">C$ ${(a.preco_num || 0).toFixed(1)}</div>
+        </div>
+      `).join('');
+    }
+
+    // ========== PARTIDAS ==========
     async function carregarPartidas() {
       try {
         const res = await fetch(`${PROXY}/partidas`, {
@@ -650,33 +585,6 @@
       }
     }
 
-    async function carregarMercado() {
-      try {
-        const res = await fetch(`${PROXY}/mercado`, {
-          headers: { 'Authorization': `Bearer ${tokenAtual}` }
-        });
-        const data = await res.json();
-        if (data && data.atletas) {
-          mercadoCompleto = data.atletas;
-          renderizarMercado(mercadoCompleto);
-        }
-      } catch (e) {
-        document.getElementById('lista-mercado').innerHTML = '<div class="loading-msg">Erro ao carregar mercado.</div>';
-      }
-    }
-
-    async function carregarParciais() {
-      try {
-        const res = await fetch(`${PROXY}/parciais`, {
-          headers: { 'Authorization': `Bearer ${tokenAtual}` }
-        });
-        const data = await res.json();
-        renderizarParciais(data);
-      } catch (e) {
-        document.getElementById('lista-parciais').innerHTML = '<div class="loading-msg">Erro ao carregar parciais.</div>';
-      }
-    }
-
     function renderizarPartidas(data) {
       const lista = document.getElementById('lista-partidas');
       if (!data || !data.partidas || data.partidas.length === 0) {
@@ -685,12 +593,7 @@
       }
       document.getElementById('numero-rodada').textContent = `Rodada ${data.rodada || '-'}`;
       const statusEl = document.getElementById('status-rodada');
-      if (data.rodada_status === 'rodando') {
-        statusEl.textContent = '🔴 Ao vivo';
-        statusEl.className = 'status-badge ao-vivo';
-      } else {
-        statusEl.textContent = 'Em breve';
-      }
+      statusEl.textContent = data.rodada === 6 ? '🔴 Ao vivo' : 'Em breve';
       lista.innerHTML = data.partidas.map(p => `
         <div class="partida">
           <div class="time-partida">${p.clube_casa_nome || 'Time Casa'}</div>
@@ -700,26 +603,17 @@
       `).join('');
     }
 
-    function renderizarMercado(atletas) {
-      const lista = document.getElementById('lista-mercado');
-      const posLabel = { 1: ['GOL','pos-gol'], 2: ['LAT','pos-lat'], 3: ['ZAG','pos-zag'], 4: ['MEI','pos-mei'], 5: ['ATA','pos-ata'], 6: ['TEC','pos-tec'] };
-      if (!atletas || atletas.length === 0) {
-        lista.innerHTML = '<div class="loading-msg">Nenhum jogador encontrado.</div>';
-        return;
+    // ========== PARCIAIS ==========
+    async function carregarParciais() {
+      try {
+        const res = await fetch(`${PROXY}/atletas/pontuados`, {
+          headers: { 'Authorization': `Bearer ${tokenAtual}` }
+        });
+        const data = await res.json();
+        renderizarParciais(data);
+      } catch (e) {
+        document.getElementById('lista-parciais').innerHTML = '<div class="loading-msg">Erro ao carregar parciais.</div>';
       }
-      lista.innerHTML = atletas.slice(0, 50).map(a => {
-        const [label, cls] = posLabel[a.posicao_id] || ['?', 'pos-gol'];
-        return `
-          <div class="jogador-mercado">
-            <div class="jogador-foto"><img src="${a.foto || 'jogador.png'}" onerror="this.src='jogador.png'" /></div>
-            <div class="jogador-info">
-              <div class="nome">${a.apelido || a.nome || 'Jogador'}</div>
-              <div class="clube">${a.clube?.abreviacao || '-'} · <span class="posicao-badge ${cls}">${label}</span></div>
-            </div>
-            <div class="jogador-preco">C$ ${(a.preco_num || 0).toFixed(1)}</div>
-          </div>
-        `;
-      }).join('');
     }
 
     function renderizarParciais(data) {
@@ -733,33 +627,63 @@
         <div class="parcial-item">
           <div>
             <div style="font-weight:600;font-size:13px;">${a.apelido || 'Jogador'}</div>
-            <div style="font-size:11px;color:#999;">${a.clube?.abreviacao || '-'}</div>
+            <div style="font-size:11px;color:#999;">${a.clube || '-'}</div>
           </div>
           <div class="parcial-pts ${a.pontuacao < 0 ? 'negativo' : ''}">${(a.pontuacao || 0).toFixed(1)} pts</div>
         </div>
       `).join('');
     }
 
-    window.mostrarPagina = function(pagina) {
-      document.querySelectorAll('.pagina').forEach(p => p.classList.remove('ativa'));
-      document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-      document.getElementById(`pagina-${pagina}`).classList.add('ativa');
-      document.getElementById(`nav-${pagina}`).classList.add('active');
-    }
+    // ========== LIGAS ==========
+    window.carregarLiga = async (codigo) => {
+      const container = document.getElementById('lista-liga');
+      container.innerHTML = '<div class="loading-msg">Carregando liga...</div>';
+      try {
+        const res = await fetch(`${PROXY}/liga/${codigo}`, {
+          headers: { 'Authorization': `Bearer ${tokenAtual}` }
+        });
+        const data = await res.json();
+        if (data.erro) {
+          container.innerHTML = `<div class="aviso">${data.erro}. Exibindo dados de exemplo.</div>`;
+          const exemplo = codigo === 'd5rp3vak58ms73eri3d0' 
+            ? ['Time A', 'Time B', 'Time C'] 
+            : ['Nattos FC', 'Amigos FC', 'Joseiros'];
+          container.innerHTML += exemplo.map((time, idx) => `
+            <div class="item-lista">
+              <span>${time}</span>
+              <span class="pontos-valor">${Math.floor(Math.random() * 100)} pts</span>
+            </div>
+          `).join('');
+        } else {
+          if (data.times) {
+            container.innerHTML = data.times.map(t => `
+              <div class="item-lista">
+                <span>${t.nome}</span>
+                <span class="pontos-valor">${t.pontos} pts</span>
+              </div>
+            `).join('');
+          } else {
+            container.innerHTML = '<div class="aviso">Formato de dados não reconhecido.</div>';
+          }
+        }
+      } catch (e) {
+        container.innerHTML = '<div class="aviso">Erro ao carregar liga.</div>';
+      }
+    };
 
+    // ========== FILTROS ==========
     window.filtrarPosicao = function(pos, btn) {
       posicaoFiltro = pos;
       document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
       btn.classList.add('ativo');
       filtrarMercado();
-    }
+    };
 
     window.filtrarMercado = function() {
       const busca = document.getElementById('busca-mercado').value.toLowerCase();
-      const posNome = { 1: 'gol', 2: 'lat', 3: 'zag', 4: 'mei', 5: 'ata', 6: 'tec' };
       let filtrado = mercadoCompleto;
       if (posicaoFiltro !== 'todos') {
-        filtrado = filtrado.filter(a => posNome[a.posicao_id] === posicaoFiltro);
+        filtrado = filtrado.filter(a => a.posicao === posicaoFiltro);
       }
       if (busca) {
         filtrado = filtrado.filter(a =>
@@ -768,13 +692,19 @@
         );
       }
       renderizarMercado(filtrado);
-    }
+    };
+
+    window.mostrarPagina = function(pagina) {
+      document.querySelectorAll('.pagina').forEach(p => p.classList.remove('ativa'));
+      document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+      document.getElementById(`pagina-${pagina}`).classList.add('ativa');
+      document.getElementById(`nav-${pagina}`).classList.add('active');
+    };
 
     window.sair = async function() {
       await signOut(auth);
       window.location.href = 'index.html';
-    }
+    };
   </script>
-
 </body>
 </html>
