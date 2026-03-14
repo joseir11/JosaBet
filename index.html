@@ -3,40 +3,799 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JosaBet - Dados Públicos</title>
+  <title>JosaBet - Home</title>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f0f2f5; }
-    h1 { color: #1a6b3c; }
-    button { background: #1a6b3c; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 5px; }
-    pre { background: white; padding: 10px; border-radius: 8px; overflow: auto; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a6b3c;
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-logo img { height: 36px; width: auto; }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .header-user img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid white;
+    }
+
+    .btn-sair {
+      background: transparent;
+      border: 1px solid white;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    nav {
+      background: #fff;
+      display: flex;
+      border-bottom: 2px solid #eee;
+      overflow-x: auto;
+      position: sticky;
+      top: 60px;
+      z-index: 99;
+    }
+
+    nav a {
+      padding: 12px 16px;
+      text-decoration: none;
+      color: #666;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+    }
+
+    nav a.active {
+      color: #1a6b3c;
+      border-bottom-color: #1a6b3c;
+    }
+
+    main { padding: 16px; max-width: 800px; margin: 0 auto; }
+
+    .pagina { display: none; }
+    .pagina.ativa { display: block; }
+
+    .cards-resumo {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .card-resumo {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+
+    .card-resumo .valor {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a6b3c;
+    }
+
+    .card-resumo .label {
+      font-size: 11px;
+      color: #999;
+      margin-top: 2px;
+    }
+
+    .secao {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+
+    .secao h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .campo-wrapper { display: flex; justify-content: center; }
+
+    .campo {
+      background: #2d8a4e;
+      border: 4px solid #145a32;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+      aspect-ratio: 68 / 105;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10px 6px;
+    }
+
+    .campo::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.04) 0px,
+        rgba(0,0,0,0.04) 14px,
+        transparent 14px,
+        transparent 28px
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .marcacoes {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .borda-interna {
+      position: absolute;
+      top: 6px; left: 6px; right: 6px; bottom: 6px;
+      border: 2px solid rgba(255,255,255,0.55);
+      border-radius: 3px;
+    }
+
+    .linha-meio {
+      position: absolute;
+      top: 50%; left: 6px; right: 6px;
+      height: 2px;
+      background: rgba(255,255,255,0.55);
+      transform: translateY(-50%);
+    }
+
+    .circulo-centro {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.55);
+      transform: translate(-50%, -50%);
+    }
+
+    .ponto-centro {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.55);
+      transform: translate(-50%, -50%);
+    }
+
+    .area-grande-baixo {
+      position: absolute;
+      bottom: 6px; left: 50%; transform: translateX(-50%);
+      width: 58%; height: 15%;
+      border: 2px solid rgba(255,255,255,0.55);
+      border-bottom: none;
+    }
+
+    .area-grande-cima {
+      position: absolute;
+      top: 6px; left: 50%; transform: translateX(-50%);
+      width: 58%; height: 15%;
+      border: 2px solid rgba(255,255,255,0.55);
+      border-top: none;
+    }
+
+    .area-pequena-baixo {
+      position: absolute;
+      bottom: 6px; left: 50%; transform: translateX(-50%);
+      width: 28%; height: 6%;
+      border: 2px solid rgba(255,255,255,0.55);
+      border-bottom: none;
+    }
+
+    .area-pequena-cima {
+      position: absolute;
+      top: 6px; left: 50%; transform: translateX(-50%);
+      width: 28%; height: 6%;
+      border: 2px solid rgba(255,255,255,0.55);
+      border-top: none;
+    }
+
+    .gol-baixo {
+      position: absolute;
+      bottom: 4px; left: 50%; transform: translateX(-50%);
+      width: 14%; height: 2%;
+      border: 2px solid rgba(255,255,255,0.7);
+      border-bottom: none;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .gol-cima {
+      position: absolute;
+      top: 4px; left: 50%; transform: translateX(-50%);
+      width: 14%; height: 2%;
+      border: 2px solid rgba(255,255,255,0.7);
+      border-top: none;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .canto {
+      position: absolute;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.45);
+    }
+
+    .canto.tl { top: 4px; left: 4px; clip-path: inset(0 50% 50% 0); }
+    .canto.tr { top: 4px; right: 4px; clip-path: inset(0 0 50% 50%); }
+    .canto.bl { bottom: 4px; left: 4px; clip-path: inset(50% 50% 0 0); }
+    .canto.br { bottom: 4px; right: 4px; clip-path: inset(50% 0 0 50%); }
+
+    .linha {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .linha-tec-gol {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .jogador {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+      width: 52px;
+    }
+
+    .jogador-circulo {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .jogador-circulo img { width: 28px; height: 28px; object-fit: contain; }
+
+    .jogador-nome {
+      font-size: 9px;
+      color: white;
+      text-align: center;
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .jogador-pts {
+      font-size: 9px;
+      color: #ffdd57;
+      font-weight: 700;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .tecnico { position: absolute; left: 4px; }
+
+    .rodada-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .rodada-badge {
+      background: #e8f5ee;
+      color: #1a6b3c;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      background: #fff3cd;
+      color: #856404;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-badge.ao-vivo { background: #ffe0e0; color: #c0392b; }
+
+    .partida {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+
+    .partida:last-child { border-bottom: none; }
+
+    .time-partida {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 38%;
+      font-size: 12px;
+    }
+
+    .time-partida.direita { justify-content: flex-end; }
+
+    .placar {
+      font-weight: 700;
+      font-size: 15px;
+      color: #1a1a1a;
+      text-align: center;
+      width: 24%;
+    }
+
+    .busca-mercado {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .filtros {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filtro-btn {
+      padding: 5px 12px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      background: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filtro-btn.ativo { background: #1a6b3c; color: white; border-color: #1a6b3c; }
+
+    .jogador-mercado {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+    }
+
+    .jogador-mercado:last-child { border-bottom: none; }
+    .jogador-mercado:hover { background: #f9f9f9; }
+
+    .jogador-foto {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: #eee;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .jogador-foto img { width: 100%; height: 100%; object-fit: cover; }
+
+    .jogador-info { flex: 1; }
+    .jogador-info .nome { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+    .jogador-info .clube { font-size: 11px; color: #999; }
+    .jogador-preco { font-size: 13px; font-weight: 600; color: #1a6b3c; }
+
+    .posicao-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .pos-gol { background: #fff3cd; color: #856404; }
+    .pos-lat { background: #d4edda; color: #155724; }
+    .pos-zag { background: #cce5ff; color: #004085; }
+    .pos-mei { background: #f8d7da; color: #721c24; }
+    .pos-ata { background: #e2d9f3; color: #4a235a; }
+    .pos-tec { background: #d1ecf1; color: #0c5460; }
+
+    .loading-msg { text-align: center; padding: 20px; color: #999; font-size: 14px; }
+
+    .parcial-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+
+    .parcial-item:last-child { border-bottom: none; }
+    .parcial-pts { font-weight: 700; font-size: 16px; color: #1a6b3c; }
+    .parcial-pts.negativo { color: #c0392b; }
   </style>
 </head>
 <body>
-  <h1>⚽ JosaBet - Dados Públicos do Cartola</h1>
-  <p>Escolha uma opção:</p>
-  <button onclick="buscar('mercado/status')">Status do Mercado</button>
-  <button onclick="buscar('atletas/mercado')">Mercado de Jogadores</button>
-  <button onclick="buscar('clubes')">Clubes</button>
-  <button onclick="buscar('rodadas')">Rodadas</button>
-  <button onclick="buscar('partidas')">Partidas</button>
-  <button onclick="buscar('videos')">Vídeos</button>
-  <hr>
-  <pre id="resultado">Clique em um botão para ver os dados...</pre>
 
-  <script>
-    const PROXY = 'https://josabet-proxy.onrender.com'; // seu proxy
+  <header>
+    <div class="header-logo">
+      <img src="CARTOLA.png" alt="JosaBet" />
+    </div>
+    <div class="header-user">
+      <img id="user-foto" src="https://via.placeholder.com/32" alt="Foto" />
+      <span id="user-nome">Usuário</span>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+  </header>
 
-    async function buscar(rota) {
-      const resultado = document.getElementById('resultado');
-      resultado.textContent = 'Carregando...';
+  <nav>
+    <a onclick="mostrarPagina('meu-time')" class="active" id="nav-meu-time">Meu Time</a>
+    <a onclick="mostrarPagina('mercado')" id="nav-mercado">Mercado</a>
+    <a onclick="mostrarPagina('parciais')" id="nav-parciais">Parciais</a>
+    <a onclick="mostrarPagina('rodada')" id="nav-rodada">Rodada</a>
+    <a onclick="mostrarPagina('liga')" id="nav-liga">Liga</a>
+  </nav>
+
+  <main>
+
+    <!-- MEU TIME -->
+    <div class="pagina ativa" id="pagina-meu-time">
+      <div class="cards-resumo">
+        <div class="card-resumo">
+          <div class="valor" id="pontos-rodada">0.0</div>
+          <div class="label">Pontos na rodada</div>
+        </div>
+        <div class="card-resumo">
+          <div class="valor" id="patrimonio">C$ 100</div>
+          <div class="label">Patrimônio</div>
+        </div>
+        <div class="card-resumo">
+          <div class="valor" id="posicao-liga">#-</div>
+          <div class="label">Posição na liga</div>
+        </div>
+      </div>
+
+      <div class="secao">
+        <h2>⚽ Meu Time</h2>
+        <div class="campo-wrapper">
+          <div class="campo">
+            <div class="marcacoes">
+              <div class="borda-interna"></div>
+              <div class="linha-meio"></div>
+              <div class="circulo-centro"></div>
+              <div class="ponto-centro"></div>
+              <div class="area-grande-baixo"></div>
+              <div class="area-grande-cima"></div>
+              <div class="area-pequena-baixo"></div>
+              <div class="area-pequena-cima"></div>
+              <div class="gol-baixo"></div>
+              <div class="gol-cima"></div>
+              <div class="canto tl"></div>
+              <div class="canto tr"></div>
+              <div class="canto bl"></div>
+              <div class="canto br"></div>
+            </div>
+
+            <div class="linha" id="linha-atacantes">
+              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Atacante</div><div class="jogador-pts">0 pts</div></div>
+              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Atacante</div><div class="jogador-pts">0 pts</div></div>
+              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Atacante</div><div class="jogador-pts">0 pts</div></div>
+            </div>
+
+            <div class="linha" id="linha-meias">
+              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Meia</div><div class="jogador-pts">0 pts</div></div>
+              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Meia</div><div class="jogador-pts">0 pts</div></div>
+              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Meia</div><div class="jogador-pts">0 pts</div></div>
+            </div>
+
+            <div class="linha" id="linha-defensores">
+              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Lateral</div><div class="jogador-pts">0 pts</div></div>
+              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Zagueiro</div><div class="jogador-pts">0 pts</div></div>
+              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Zagueiro</div><div class="jogador-pts">0 pts</div></div>
+              <div class="jogador"><div class="jogador-circulo"><img src="jogador.png" /></div><div class="jogador-nome">Lateral</div><div class="jogador-pts">0 pts</div></div>
+            </div>
+
+            <div class="linha-tec-gol">
+              <div class="jogador tecnico">
+                <div class="jogador-circulo"><img src="tec.png" /></div>
+                <div class="jogador-nome">Técnico</div>
+                <div class="jogador-pts">0 pts</div>
+              </div>
+              <div class="jogador">
+                <div class="jogador-circulo"><img src="gol.png" /></div>
+                <div class="jogador-nome">Goleiro</div>
+                <div class="jogador-pts">0 pts</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MERCADO -->
+    <div class="pagina" id="pagina-mercado">
+      <div class="secao">
+        <h2>🛒 Mercado de Jogadores</h2>
+        <input class="busca-mercado" id="busca-mercado" type="text" placeholder="Buscar jogador..." oninput="filtrarMercado()" />
+        <div class="filtros">
+          <button class="filtro-btn ativo" onclick="filtrarPosicao('todos', this)">Todos</button>
+          <button class="filtro-btn" onclick="filtrarPosicao('gol', this)">Goleiro</button>
+          <button class="filtro-btn" onclick="filtrarPosicao('lat', this)">Lateral</button>
+          <button class="filtro-btn" onclick="filtrarPosicao('zag', this)">Zagueiro</button>
+          <button class="filtro-btn" onclick="filtrarPosicao('mei', this)">Meia</button>
+          <button class="filtro-btn" onclick="filtrarPosicao('ata', this)">Atacante</button>
+          <button class="filtro-btn" onclick="filtrarPosicao('tec', this)">Técnico</button>
+        </div>
+        <div id="lista-mercado"><div class="loading-msg">Carregando jogadores...</div></div>
+      </div>
+    </div>
+
+    <!-- PARCIAIS -->
+    <div class="pagina" id="pagina-parciais">
+      <div class="secao">
+        <h2>📊 Parciais da Rodada</h2>
+        <div id="lista-parciais"><div class="loading-msg">Carregando parciais...</div></div>
+      </div>
+    </div>
+
+    <!-- RODADA -->
+    <div class="pagina" id="pagina-rodada">
+      <div class="secao">
+        <div class="rodada-info">
+          <span class="rodada-badge" id="numero-rodada">Rodada -</span>
+          <span class="status-badge" id="status-rodada">Carregando...</span>
+        </div>
+        <h2>📅 Jogos da Rodada</h2>
+        <div id="lista-partidas"><div class="loading-msg">Carregando partidas...</div></div>
+      </div>
+    </div>
+
+    <!-- LIGA -->
+    <div class="pagina" id="pagina-liga">
+      <div class="secao">
+        <h2>🏆 Minha Liga</h2>
+        <div id="lista-liga"><div class="loading-msg">Carregando liga...</div></div>
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+
+    const PROXY = 'https://josabet-proxy.onrender.com';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCoegwWC-xT7nXHQCwOCf2oM2IzYXODA8o",
+      authDomain: "josabet-db231.firebaseapp.com",
+      projectId: "josabet-db231",
+      storageBucket: "josabet-db231.firebasestorage.app",
+      messagingSenderId: "929085822183",
+      appId: "1:929085822183:web:9c5b7a27cf4b355eb5be42"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    let tokenAtual = '';
+    let mercadoCompleto = [];
+    let posicaoFiltro = 'todos';
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        document.getElementById('user-nome').textContent = user.displayName;
+        document.getElementById('user-foto').src = user.photoURL || 'https://via.placeholder.com/32';
+        tokenAtual = await user.getIdToken();
+        carregarDados();
+      } else {
+        window.location.href = 'index.html';
+      }
+    });
+
+    async function carregarDados() {
+      carregarTime();
+      carregarPartidas();
+      carregarMercado();
+      carregarParciais();
+    }
+
+    async function carregarTime() {
       try {
-        const res = await fetch(`${PROXY}/${rota}`);
+        const res = await fetch(`${PROXY}/time`, {
+          headers: { 'Authorization': `Bearer ${tokenAtual}` }
+        });
         const data = await res.json();
-        resultado.textContent = JSON.stringify(data, null, 2);
-      } catch (erro) {
-        resultado.textContent = 'Erro: ' + erro.message;
+        if (data && data.atletas) {
+          document.getElementById('pontos-rodada').textContent = (data.pontos || 0).toFixed(1);
+          document.getElementById('patrimonio').textContent = `C$ ${(data.patrimonio || 100).toFixed(0)}`;
+        }
+      } catch (e) { console.log('Erro ao carregar time:', e); }
+    }
+
+    async function carregarPartidas() {
+      try {
+        const res = await fetch(`${PROXY}/partidas`, {
+          headers: { 'Authorization': `Bearer ${tokenAtual}` }
+        });
+        const data = await res.json();
+        renderizarPartidas(data);
+      } catch (e) {
+        document.getElementById('lista-partidas').innerHTML = '<div class="loading-msg">Erro ao carregar partidas.</div>';
       }
     }
+
+    async function carregarMercado() {
+      try {
+        const res = await fetch(`${PROXY}/mercado`, {
+          headers: { 'Authorization': `Bearer ${tokenAtual}` }
+        });
+        const data = await res.json();
+        if (data && data.atletas) {
+          mercadoCompleto = data.atletas;
+          renderizarMercado(mercadoCompleto);
+        }
+      } catch (e) {
+        document.getElementById('lista-mercado').innerHTML = '<div class="loading-msg">Erro ao carregar mercado.</div>';
+      }
+    }
+
+    async function carregarParciais() {
+      try {
+        const res = await fetch(`${PROXY}/parciais`, {
+          headers: { 'Authorization': `Bearer ${tokenAtual}` }
+        });
+        const data = await res.json();
+        renderizarParciais(data);
+      } catch (e) {
+        document.getElementById('lista-parciais').innerHTML = '<div class="loading-msg">Erro ao carregar parciais.</div>';
+      }
+    }
+
+    function renderizarPartidas(data) {
+      const lista = document.getElementById('lista-partidas');
+      if (!data || !data.partidas || data.partidas.length === 0) {
+        lista.innerHTML = '<div class="loading-msg">Nenhuma partida encontrada.</div>';
+        return;
+      }
+      document.getElementById('numero-rodada').textContent = `Rodada ${data.rodada || '-'}`;
+      const statusEl = document.getElementById('status-rodada');
+      if (data.rodada_status === 'rodando') {
+        statusEl.textContent = '🔴 Ao vivo';
+        statusEl.className = 'status-badge ao-vivo';
+      } else {
+        statusEl.textContent = 'Em breve';
+      }
+      lista.innerHTML = data.partidas.map(p => `
+        <div class="partida">
+          <div class="time-partida">${p.clube_casa_nome || 'Time Casa'}</div>
+          <div class="placar">${p.placar_oficial_mandante ?? 0} x ${p.placar_oficial_visitante ?? 0}</div>
+          <div class="time-partida direita">${p.clube_visitante_nome || 'Time Visitante'}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderizarMercado(atletas) {
+      const lista = document.getElementById('lista-mercado');
+      const posLabel = { 1: ['GOL','pos-gol'], 2: ['LAT','pos-lat'], 3: ['ZAG','pos-zag'], 4: ['MEI','pos-mei'], 5: ['ATA','pos-ata'], 6: ['TEC','pos-tec'] };
+      if (!atletas || atletas.length === 0) {
+        lista.innerHTML = '<div class="loading-msg">Nenhum jogador encontrado.</div>';
+        return;
+      }
+      lista.innerHTML = atletas.slice(0, 50).map(a => {
+        const [label, cls] = posLabel[a.posicao_id] || ['?', 'pos-gol'];
+        return `
+          <div class="jogador-mercado">
+            <div class="jogador-foto"><img src="${a.foto || 'jogador.png'}" onerror="this.src='jogador.png'" /></div>
+            <div class="jogador-info">
+              <div class="nome">${a.apelido || a.nome || 'Jogador'}</div>
+              <div class="clube">${a.clube?.abreviacao || '-'} · <span class="posicao-badge ${cls}">${label}</span></div>
+            </div>
+            <div class="jogador-preco">C$ ${(a.preco_num || 0).toFixed(1)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderizarParciais(data) {
+      const lista = document.getElementById('lista-parciais');
+      if (!data || !data.atletas) {
+        lista.innerHTML = '<div class="loading-msg">Parciais indisponíveis no momento.</div>';
+        return;
+      }
+      const atletas = Object.values(data.atletas).sort((a, b) => b.pontuacao - a.pontuacao);
+      lista.innerHTML = atletas.slice(0, 30).map(a => `
+        <div class="parcial-item">
+          <div>
+            <div style="font-weight:600;font-size:13px;">${a.apelido || 'Jogador'}</div>
+            <div style="font-size:11px;color:#999;">${a.clube?.abreviacao || '-'}</div>
+          </div>
+          <div class="parcial-pts ${a.pontuacao < 0 ? 'negativo' : ''}">${(a.pontuacao || 0).toFixed(1)} pts</div>
+        </div>
+      `).join('');
+    }
+
+    window.mostrarPagina = function(pagina) {
+      document.querySelectorAll('.pagina').forEach(p => p.classList.remove('ativa'));
+      document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+      document.getElementById(`pagina-${pagina}`).classList.add('ativa');
+      document.getElementById(`nav-${pagina}`).classList.add('active');
+    }
+
+    window.filtrarPosicao = function(pos, btn) {
+      posicaoFiltro = pos;
+      document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
+      btn.classList.add('ativo');
+      filtrarMercado();
+    }
+
+    window.filtrarMercado = function() {
+      const busca = document.getElementById('busca-mercado').value.toLowerCase();
+      const posNome = { 1: 'gol', 2: 'lat', 3: 'zag', 4: 'mei', 5: 'ata', 6: 'tec' };
+      let filtrado = mercadoCompleto;
+      if (posicaoFiltro !== 'todos') {
+        filtrado = filtrado.filter(a => posNome[a.posicao_id] === posicaoFiltro);
+      }
+      if (busca) {
+        filtrado = filtrado.filter(a =>
+          (a.apelido || '').toLowerCase().includes(busca) ||
+          (a.nome || '').toLowerCase().includes(busca)
+        );
+      }
+      renderizarMercado(filtrado);
+    }
+
+    window.sair = async function() {
+      await signOut(auth);
+      window.location.href = 'index.html';
+    }
   </script>
+
 </body>
 </html>
