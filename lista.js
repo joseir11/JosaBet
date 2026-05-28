@@ -16,6 +16,15 @@ const btnCompartilhar =
 const btnPix =
   document.getElementById("btnPix");
 
+const campoData =
+  document.getElementById("campoData");
+
+const campoLocal =
+  document.getElementById("campoLocal");
+
+const campoValor =
+  document.getElementById("campoValor");
+
 /* ======================================================
    PIX
 ====================================================== */
