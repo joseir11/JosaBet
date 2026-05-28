@@ -1,3 +1,4 @@
+```javascript
 const listasContainer =
   document.getElementById("listasContainer");
 
@@ -117,63 +118,6 @@ function desfazer() {
   renderizar();
 
   salvarGoogleSheets();
-
-/* ======================================================
-   INFO PELADA
-====================================================== */
-
-function salvarInfoPelada() {
-
-  infoPelada.data =
-    campoData.value;
-
-  infoPelada.local =
-    campoLocal.value.toUpperCase();
-
-  infoPelada.valor =
-    campoValor.value;
-
-  localStorage.setItem(
-    "futpao_info",
-    JSON.stringify(infoPelada)
-  );
-}
-
-function carregarInfoPelada() {
-
-  const salvo =
-    localStorage.getItem("futpao_info");
-
-  if (!salvo) return;
-
-  infoPelada =
-    JSON.parse(salvo);
-
-  campoData.value =
-    infoPelada.data || "";
-
-  campoLocal.value =
-    infoPelada.local || "";
-
-  campoValor.value =
-    infoPelada.valor || "";
-}
-
-campoData.addEventListener(
-  "input",
-  salvarInfoPelada
-);
-
-campoLocal.addEventListener(
-  "input",
-  salvarInfoPelada
-);
-
-campoValor.addEventListener(
-  "input",
-  salvarInfoPelada
-);
-  
 }
 
 function refazer() {
@@ -194,6 +138,51 @@ function refazer() {
 }
 
 /* ======================================================
+   INFO PELADA
+====================================================== */
+
+function salvarInfoPelada() {
+
+  infoPelada.data =
+    campoData.value;
+
+  infoPelada.local =
+    campoLocal.value.toUpperCase();
+
+  infoPelada.valor =
+    campoValor.value;
+}
+
+function carregarInfoPelada(info = null) {
+
+  if (!info) return;
+
+  campoData.value =
+    info.DATA || "";
+
+  campoLocal.value =
+    info.LOCAL || "";
+
+  campoValor.value =
+    info.VALOR || "";
+}
+
+campoData.addEventListener(
+  "input",
+  salvarInfoPelada
+);
+
+campoLocal.addEventListener(
+  "input",
+  salvarInfoPelada
+);
+
+campoValor.addEventListener(
+  "input",
+  salvarInfoPelada
+);
+
+/* ======================================================
    GOOGLE SHEETS
 ====================================================== */
 
@@ -209,7 +198,11 @@ async function carregarGoogleSheets() {
 
     listas = [];
 
-    dados.forEach(item => {
+    carregarInfoPelada(
+      dados.info
+    );
+
+    dados.listas.forEach(item => {
 
       let listaExistente =
         listas.find(
@@ -269,11 +262,27 @@ async function salvarGoogleSheets() {
 
   try {
 
+    salvarInfoPelada();
+
     await fetch(API_URL, {
 
       method: "POST",
 
-      body: JSON.stringify(listas)
+      body: JSON.stringify({
+
+        listas,
+
+        info: {
+
+          data: campoData.value,
+
+          local: campoLocal.value,
+
+          valor: campoValor.value
+
+        }
+
+      })
 
     });
 
@@ -619,18 +628,18 @@ function compartilharWhatsApp() {
 
   texto +=
     "================================\n\n";
-texto +=
-  `DATA: ${campoData.value}\n`;
 
-texto +=
-  `LOCAL: ${campoLocal.value}\n`;
+  texto +=
+    `DATA: ${campoData.value}\n`;
 
-texto +=
-  `VALOR: ${campoValor.value}\n`;
+  texto +=
+    `LOCAL: ${campoLocal.value}\n`;
 
-texto +=
-  "================================\n\n";
-  
+  texto +=
+    `VALOR: ${campoValor.value}\n`;
+
+  texto +=
+    "================================\n\n";
 
   listas.forEach(lista => {
 
@@ -684,6 +693,5 @@ texto +=
    START
 ====================================================== */
 
-carregarInfoPelada();
-
 carregarGoogleSheets();
+```
