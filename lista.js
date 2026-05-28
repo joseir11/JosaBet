@@ -513,7 +513,7 @@ function compartilharWhatsApp() {
 
   /* Rodape */
   corpo += sep + "\n";
-  corpo += centralizar("FUTPAO ONLINE") + "\n";
+  corpo += centralizar("FUTPAO - LISTA ONLINE") + "\n";
   corpo += sep;
 
   /* Bloco monospacado do WhatsApp */
