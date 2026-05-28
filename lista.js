@@ -47,6 +47,16 @@ let listas = [];
 
 let contador = 0;
 
+let infoPelada = {
+
+  data: "",
+
+  local: "",
+
+  valor: ""
+
+};
+
 const undoStack = [];
 
 const redoStack = [];
