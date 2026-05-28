@@ -310,11 +310,12 @@ function renderizar() {
 
           <thead>
 
-	<tr>
-  		<th>Nº</th>
-  		<th>JOGADOR</th>
-  		<th>STATUS</th>
-	</tr>
+            <tr>
+              <th></th>
+              <th>Nº</th>
+              <th>JOGADOR</th>
+              <th>STATUS</th>
+            </tr>
 
           </thead>
 
@@ -323,31 +324,35 @@ function renderizar() {
             ${lista.jogadores.map(
               (jogador, jogadorIndex) => `
 
-<tr>
+              <tr>
 
-  <td class="colunaNumero">
-    ${jogadorIndex + 1}
-  </td>
+                <td class="dragHandle">
+                  ☰
+                </td>
 
-  <td>
-    <input
-      type="text"
-      value="${jogador.nome}"
-      placeholder="Nome"
-      onchange="alterarJogador(${listaIndex}, ${jogadorIndex}, 'nome', this.value)"
-    >
-  </td>
+                <td class="colunaNumero">
+                  ${jogadorIndex + 1}
+                </td>
 
-  <td>
-    <input
-      type="text"
-      value="${jogador.status}"
-      placeholder="?"
-      onchange="alterarJogador(${listaIndex}, ${jogadorIndex}, 'status', this.value)"
-    >
-  </td>
+                <td>
+                  <input
+                    type="text"
+                    value="${jogador.nome}"
+                    placeholder="Nome"
+                    onchange="alterarJogador(${listaIndex}, ${jogadorIndex}, 'nome', this.value)"
+                  >
+                </td>
 
-</tr>
+                <td>
+                  <input
+                    type="text"
+                    value="${jogador.status}"
+                    placeholder="?"
+                    onchange="alterarJogador(${listaIndex}, ${jogadorIndex}, 'status', this.value)"
+                  >
+                </td>
+
+              </tr>
 
             `
             ).join("")}
@@ -477,6 +482,8 @@ function ativarDragDrop(listaIndex) {
 
   new Sortable(tbody, {
 
+    handle: ".dragHandle",
+
     group: "listasCompartilhadas",
 
     animation: 180,
@@ -526,15 +533,13 @@ btnCompartilhar.addEventListener(
 
 function compartilharWhatsApp() {
 
-  let texto = "```";
-
-  texto += "\n";
+  let texto = "";
 
   texto +=
     "================================\n";
 
   texto +=
-    "       CUPÃO NÃO FISCAL\n";
+    "    𝙲𝚄𝙿ÃO 𝙽ÃO 𝙵𝙸𝚂𝙲𝙰𝙻\n";
 
   texto +=
     "================================\n\n";
@@ -548,18 +553,22 @@ function compartilharWhatsApp() {
       "--------------------------------\n";
 
     lista.jogadores.forEach(
-      jogador => {
+      (jogador, index) => {
+
+        const numero =
+          String(index + 1)
+          .padStart(2, '0');
 
         const nome =
           (jogador.nome || "")
           .toUpperCase()
-          .padEnd(24, ".");
+          .padEnd(20, ".");
 
         const status =
           jogador.status || "?";
 
         texto +=
-          `${nome} ${status}\n`;
+          `${numero} ${nome} ${status}\n`;
 
       }
     );
@@ -572,12 +581,10 @@ function compartilharWhatsApp() {
     "================================\n";
 
   texto +=
-    "         FUTPÃO ONLINE\n";
+    "      𝙵𝚄𝚃𝙿ÃO 𝙾𝙽𝙻𝙸𝙽𝙴\n";
 
   texto +=
-    "================================\n";
-
-  texto += "```";
+    "================================";
 
   const url =
     `https://wa.me/?text=${encodeURIComponent(texto)}`;
