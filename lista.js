@@ -37,7 +37,7 @@ const chavePix =
   "18e978ec-bc4b-43f1-bfdf-3647044be55f";
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbwuaVPIpN_oThzs8s06mcDHDk2CvWFVWhuSLZ7FqISAdsNDAjQNUr29JMR6UO1k8vlg0w/exec";
+  "https://script.google.com/macros/s/AKfycbxhFTSrHY6bPDT4aLLpcfWJq3r90_rWV30rc1JYwsbv9jlgTiz6-g1CR_TScyX3-LxxoQ/exec";
 
 /* ======================================================
    ESTADO
