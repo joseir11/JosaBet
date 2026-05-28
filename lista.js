@@ -139,6 +139,7 @@ function salvarInfoPelada() {
    GOOGLE SHEETS
 ====================================================== */
 
+
 async function carregarGoogleSheets() {
 
   try {
@@ -165,7 +166,6 @@ async function carregarGoogleSheets() {
 
       campoValor.value =
         dados.info.VALOR || "";
-
     }
 
     /* =========================
@@ -205,15 +205,26 @@ async function carregarGoogleSheets() {
 
         listaExistente.jogadores.push({
 
-          nome: item.jogador,
+          nome: item.jogador || "",
 
-          status: item.status
+          status: item.status || "?"
 
         });
 
       });
 
     }
+
+    renderizar();
+
+  } catch (erro) {
+
+    console.error(
+      "Erro ao carregar:",
+      erro
+    );
+  }
+}
 
     /* =========================
        LISTAS PADRÃO
