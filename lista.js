@@ -1,4 +1,3 @@
-```javascript
 const listasContainer =
   document.getElementById("listasContainer");
 
@@ -141,9 +140,6 @@ async function carregarGoogleSheets() {
     const respostaApi =
       await resposta.json();
 
-    const dados =
-      respostaApi.dados || [];
-
     /* =========================
        INFO
     ========================= */
@@ -161,78 +157,47 @@ async function carregarGoogleSheets() {
     }
 
     /* =========================
-       LIMPA LISTAS
-    ========================= */
-
-    listas = [];
-
-    /* =========================
        MONTA LISTAS
+       ✅ CORRIGIDO: consome "listas" direto
+       no formato que o Apps Script retorna
     ========================= */
 
-    dados.forEach(item => {
+    if (
+      respostaApi.listas &&
+      respostaApi.listas.length > 0
+    ) {
 
-      let listaExistente =
-        listas.find(
-          l => l.titulo === item.lista
-        );
+      listas = respostaApi.listas.map(l => ({
 
-      if (!listaExistente) {
+        id: Date.now() + Math.random(),
 
-        listaExistente = {
+        titulo: l.titulo,
 
-          id:
-            Date.now() +
-            Math.random(),
+        jogadores: l.jogadores.map(j => ({
 
-          titulo: item.lista,
+          nome: j.nome || "",
 
-          jogadores: []
+          status: j.status || "?"
 
-        };
+        }))
 
-        listas.push(
-          listaExistente
-        );
-      }
+      }));
 
-      listaExistente.jogadores.push({
+    } else {
 
-        nome:
-          item.jogador || "",
+      /* =========================
+         LISTAS PADRÃO
+      ========================= */
 
-        status:
-          item.status || "?"
+      listas = [];
 
-      });
+      criarLista("TITULARES", false);
 
-    });
+      criarLista("SUPLENTES", false);
 
-    /* =========================
-       LISTAS PADRÃO
-    ========================= */
+      criarLista("GOLEIROS", false);
 
-    if (listas.length === 0) {
-
-      criarLista(
-        "TITULARES",
-        false
-      );
-
-      criarLista(
-        "SUPLENTES",
-        false
-      );
-
-      criarLista(
-        "GOLEIROS",
-        false
-      );
-
-      criarLista(
-        "FORA",
-        false
-      );
+      criarLista("FORA", false);
     }
 
     salvarHistorico();
@@ -701,4 +666,3 @@ function compartilharWhatsApp() {
 ====================================================== */
 
 carregarGoogleSheets();
-```
