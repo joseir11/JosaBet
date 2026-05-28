@@ -1,13 +1,83 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>FUTPÃO - Lista de Jogadores</title>
-    <link rel="stylesheet" href="style.css">
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+  <title>FUTPÃO ONLINE</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  >
+
 </head>
 <body>
-    <div id="app"></div>
-    <script src="script.js"></script>
+
+  <div class="app">
+
+    <div class="top-bar">
+
+      <span class="icon-emoji">⚽</span>
+
+      <h1>FUTPÃO ONLINE</h1>
+
+      <span class="icon-emoji">🍞</span>
+
+    </div>
+
+    <div class="painel-superior">
+
+      <div class="mascote-container">
+
+        <img
+          src="wr.png"
+          alt="WR"
+          class="mascote-img"
+        >
+
+      </div>
+
+      <div class="painel-acoes">
+
+        <button id="btnDesfazer" title="Desfazer">
+          ↶
+        </button>
+
+        <button id="btnRefazer" title="Refazer">
+          ↷
+        </button>
+
+        <button id="btnNovaLista" title="Nova Lista">
+          +
+        </button>
+
+        <button id="btnCompartilhar" title="Compartilhar">
+          <i class="fa-solid fa-share-nodes"></i>
+        </button>
+
+        <button id="btnPix" title="PIX">
+          <img src="pix.png" alt="PIX">
+        </button>
+
+      </div>
+
+    </div>
+
+    <div id="listasContainer"></div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+  <script src="lista.js"></script>
+
 </body>
 </html>
