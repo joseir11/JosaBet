@@ -1,4 +1,3 @@
-```javascript
 const listasContainer =
   document.getElementById("listasContainer");
 
@@ -47,16 +46,6 @@ const API_URL =
 let listas = [];
 
 let contador = 0;
-
-let infoPelada = {
-
-  data: "",
-
-  local: "",
-
-  valor: ""
-
-};
 
 const undoStack = [];
 
@@ -143,44 +132,8 @@ function refazer() {
 
 function salvarInfoPelada() {
 
-  infoPelada.data =
-    campoData.value;
-
-  infoPelada.local =
-    campoLocal.value.toUpperCase();
-
-  infoPelada.valor =
-    campoValor.value;
+  salvarGoogleSheets();
 }
-
-function carregarInfoPelada(info = null) {
-
-  if (!info) return;
-
-  campoData.value =
-    info.DATA || "";
-
-  campoLocal.value =
-    info.LOCAL || "";
-
-  campoValor.value =
-    info.VALOR || "";
-}
-
-campoData.addEventListener(
-  "input",
-  salvarInfoPelada
-);
-
-campoLocal.addEventListener(
-  "input",
-  salvarInfoPelada
-);
-
-campoValor.addEventListener(
-  "input",
-  salvarInfoPelada
-);
 
 /* ======================================================
    GOOGLE SHEETS
@@ -198,51 +151,95 @@ async function carregarGoogleSheets() {
 
     listas = [];
 
-    carregarInfoPelada(
-      dados.info
-    );
+    /* =========================
+       INFO
+    ========================= */
 
-    dados.listas.forEach(item => {
+    if (dados.info) {
 
-      let listaExistente =
-        listas.find(
-          l => l.titulo === item.lista
-        );
+      campoData.value =
+        dados.info.DATA || "";
 
-      if (!listaExistente) {
+      campoLocal.value =
+        dados.info.LOCAL || "";
 
-        listaExistente = {
+      campoValor.value =
+        dados.info.VALOR || "";
 
-          id: Date.now() + Math.random(),
+    }
 
-          titulo: item.lista,
+    /* =========================
+       LISTAS
+    ========================= */
 
-          jogadores: []
+    if (
+      dados.listas &&
+      Array.isArray(dados.listas)
+    ) {
 
-        };
+      dados.listas.forEach(item => {
 
-        listas.push(listaExistente);
-      }
+        let listaExistente =
+          listas.find(
+            l => l.titulo === item.lista
+          );
 
-      listaExistente.jogadores.push({
+        if (!listaExistente) {
 
-        nome: item.jogador,
+          listaExistente = {
 
-        status: item.status
+            id:
+              Date.now() +
+              Math.random(),
+
+            titulo: item.lista,
+
+            jogadores: []
+
+          };
+
+          listas.push(
+            listaExistente
+          );
+        }
+
+        listaExistente.jogadores.push({
+
+          nome: item.jogador,
+
+          status: item.status
+
+        });
 
       });
 
-    });
+    }
+
+    /* =========================
+       LISTAS PADRÃO
+    ========================= */
 
     if (listas.length === 0) {
 
-      criarLista("TITULARES", false);
+      criarLista(
+        "TITULARES",
+        false
+      );
 
-      criarLista("SUPLENTES", false);
+      criarLista(
+        "SUPLENTES",
+        false
+      );
 
-      criarLista("GOLEIROS", false);
+      criarLista(
+        "GOLEIROS",
+        false
+      );
 
-      criarLista("FORA", false);
+      criarLista(
+        "FORA",
+        false
+      );
     }
 
     salvarHistorico();
@@ -261,8 +258,6 @@ async function carregarGoogleSheets() {
 async function salvarGoogleSheets() {
 
   try {
-
-    salvarInfoPelada();
 
     await fetch(API_URL, {
 
@@ -294,6 +289,25 @@ async function salvarGoogleSheets() {
     );
   }
 }
+
+/* ======================================================
+   EVENTOS INFO
+====================================================== */
+
+campoData.addEventListener(
+  "input",
+  salvarInfoPelada
+);
+
+campoLocal.addEventListener(
+  "input",
+  salvarInfoPelada
+);
+
+campoValor.addEventListener(
+  "input",
+  salvarInfoPelada
+);
 
 /* ======================================================
    BOTÕES
@@ -694,4 +708,3 @@ function compartilharWhatsApp() {
 ====================================================== */
 
 carregarGoogleSheets();
-```
