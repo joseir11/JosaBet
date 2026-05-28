@@ -1,3 +1,7 @@
+/* ======================================================
+   ELEMENTOS
+====================================================== */
+
 const listasContainer =
   document.getElementById("listasContainer");
 
@@ -26,15 +30,11 @@ const campoValor =
   document.getElementById("campoValor");
 
 /* ======================================================
-   PIX
+   CONFIGURAÇÃO
 ====================================================== */
 
 const chavePix =
   "18e978ec-bc4b-43f1-bfdf-3647044be55f";
-
-/* ======================================================
-   API GOOGLE
-====================================================== */
 
 const API_URL =
   "https://script.google.com/macros/s/AKfycbwuaVPIpN_oThzs8s06mcDHDk2CvWFVWhuSLZ7FqISAdsNDAjQNUr29JMR6UO1k8vlg0w/exec";
@@ -43,49 +43,35 @@ const API_URL =
    ESTADO
 ====================================================== */
 
-let listas = [];
-
-let contador = 0;
+let listas     = [];
+let contador   = 0;
+let carregando = true;   // trava: bloqueia POST até o GET terminar
 
 const undoStack = [];
-
 const redoStack = [];
 
 /* ======================================================
    PIX
 ====================================================== */
 
-btnPix.addEventListener(
-  "click",
-  copiarPix
-);
+btnPix.addEventListener("click", () => {
 
-function copiarPix() {
+  navigator.clipboard
+    .writeText(chavePix)
+    .catch(() => {});
 
-  navigator.clipboard.writeText(
-    chavePix
-  );
-
-  alert(
-    "CHAVE PIX COPIADA ✅\n\n" +
-    chavePix
-  );
-}
+  alert("CHAVE PIX COPIADA ✅\n\n" + chavePix);
+});
 
 /* ======================================================
-   HISTÓRICO
+   HISTÓRICO  (undo / redo)
 ====================================================== */
 
 function salvarHistorico() {
 
-  undoStack.push(
-    JSON.stringify(listas)
-  );
+  undoStack.push(JSON.stringify(listas));
 
-  if (undoStack.length > 100) {
-
-    undoStack.shift();
-  }
+  if (undoStack.length > 100) undoStack.shift();
 
   redoStack.length = 0;
 }
@@ -94,18 +80,12 @@ function desfazer() {
 
   if (undoStack.length <= 1) return;
 
-  redoStack.push(
-    JSON.stringify(listas)
-  );
-
+  redoStack.push(JSON.stringify(listas));
   undoStack.pop();
 
-  listas = JSON.parse(
-    undoStack[undoStack.length - 1]
-  );
+  listas = JSON.parse(undoStack[undoStack.length - 1]);
 
   renderizar();
-
   salvarGoogleSheets();
 }
 
@@ -113,215 +93,154 @@ function refazer() {
 
   if (redoStack.length === 0) return;
 
-  undoStack.push(
-    JSON.stringify(listas)
-  );
+  undoStack.push(JSON.stringify(listas));
 
-  listas = JSON.parse(
-    redoStack.pop()
-  );
+  listas = JSON.parse(redoStack.pop());
 
   renderizar();
-
   salvarGoogleSheets();
 }
 
+btnDesfazer.addEventListener("click", desfazer);
+btnRefazer.addEventListener("click", refazer);
+
 /* ======================================================
-   GOOGLE SHEETS
+   GOOGLE SHEETS — GET
 ====================================================== */
 
 async function carregarGoogleSheets() {
 
+  carregando = true;
+
   try {
 
-    const resposta =
-      await fetch(API_URL);
+    /* Apps Script exige redirect follow — fetch padrão já faz isso,
+       mas precisamos garantir que não usamos no-cors no GET,
+       pois precisamos LER a resposta. */
+    const resposta = await fetch(API_URL, {
+      method:   "GET",
+      redirect: "follow"
+    });
 
-    const respostaApi =
-      await resposta.json();
+    const json = await resposta.json();
 
-    /* =========================
-       INFO
-    ========================= */
-
-    if (respostaApi.info) {
-
-      campoData.value =
-        respostaApi.info.DATA || "";
-
-      campoLocal.value =
-        respostaApi.info.LOCAL || "";
-
-      campoValor.value =
-        respostaApi.info.VALOR || "";
+    /* ---------- INFO ---------- */
+    if (json.info) {
+      campoData.value  = json.info.DATA  || "";
+      campoLocal.value = json.info.LOCAL || "";
+      campoValor.value = json.info.VALOR || "";
     }
 
-    /* =========================
-       MONTA LISTAS
-       ✅ CORRIGIDO: consome "listas" direto
-       no formato que o Apps Script retorna
-    ========================= */
+    /* ---------- LISTAS ----------
+       O Apps Script retorna:
+       { listas: [ { titulo, jogadores: [{nome, status}] } ], info: {...} }
+    -------------------------------- */
+    const listasApi = json.listas || [];
 
-    if (
-      respostaApi.listas &&
-      respostaApi.listas.length > 0
-    ) {
+    if (listasApi.length > 0) {
 
-      listas = respostaApi.listas.map(l => ({
-
-        id: Date.now() + Math.random(),
-
-        titulo: l.titulo,
-
-        jogadores: l.jogadores.map(j => ({
-
-          nome: j.nome || "",
-
+      listas = listasApi.map(l => ({
+        id:       Date.now() + Math.random(),
+        titulo:   l.titulo   || "",
+        jogadores: (l.jogadores || []).map(j => ({
+          nome:   j.nome   || "",
           status: j.status || "?"
-
         }))
-
       }));
 
     } else {
 
-      /* =========================
-         LISTAS PADRÃO
-      ========================= */
-
+      /* Planilha vazia → cria estrutura padrão SEM salvar */
       listas = [];
-
-      criarLista("TITULARES", false);
-
-      criarLista("SUPLENTES", false);
-
-      criarLista("GOLEIROS", false);
-
-      criarLista("FORA", false);
+      criarLista("TITULARES",       false);
+      criarLista("SUPLENTES",       false);
+      criarLista("GOLEIROS",        false);
+      criarLista("GOLEIROS SUPLENTES", false);
+      criarLista("FORA",            false);
     }
-
-    salvarHistorico();
-
-    renderizar();
 
   } catch (erro) {
 
-    console.error(
-      "Erro ao carregar:",
-      erro
-    );
+    console.error("Erro ao carregar da planilha:", erro);
+
+    /* Em caso de falha de rede, exibe estrutura padrão vazia
+       mas NÃO salva — para não apagar dados existentes */
+    if (listas.length === 0) {
+      criarLista("TITULARES", false);
+      criarLista("SUPLENTES", false);
+      criarLista("GOLEIROS",  false);
+      criarLista("FORA",      false);
+    }
+
+  } finally {
+
+    salvarHistorico();
+    renderizar();
+
+    /* Libera o POST somente após o GET concluir (com ou sem erro) */
+    carregando = false;
   }
 }
 
+/* ======================================================
+   GOOGLE SHEETS — POST
+====================================================== */
+
 async function salvarGoogleSheets() {
+
+  /* Nunca salva enquanto o carregamento inicial não terminou */
+  if (carregando) return;
 
   try {
 
     await fetch(API_URL, {
-
-      method: "POST",
-
+      method:   "POST",
+      redirect: "follow",
       body: JSON.stringify({
-
         listas,
-
         info: {
-
-          data: campoData.value,
-
+          data:  campoData.value,
           local: campoLocal.value,
-
           valor: campoValor.value
-
         }
-
       })
-
     });
 
   } catch (erro) {
 
-    console.error(
-      "Erro ao salvar:",
-      erro
-    );
+    console.error("Erro ao salvar na planilha:", erro);
   }
 }
 
 /* ======================================================
-   EVENTOS INFO
+   EVENTOS — campos de info
 ====================================================== */
 
-campoData.addEventListener(
-  "change",
-  salvarGoogleSheets
-);
-
-campoLocal.addEventListener(
-  "change",
-  salvarGoogleSheets
-);
-
-campoValor.addEventListener(
-  "change",
-  salvarGoogleSheets
-);
+campoData.addEventListener("change",  salvarGoogleSheets);
+campoLocal.addEventListener("change", salvarGoogleSheets);
+campoValor.addEventListener("change", salvarGoogleSheets);
 
 /* ======================================================
-   BOTÕES
+   NOVA LISTA
 ====================================================== */
 
-btnNovaLista.addEventListener(
-  "click",
-  () => {
+btnNovaLista.addEventListener("click", () => {
+  salvarHistorico();
+  criarLista();
+});
 
-    salvarHistorico();
-
-    criarLista();
-  }
-);
-
-btnDesfazer.addEventListener(
-  "click",
-  desfazer
-);
-
-btnRefazer.addEventListener(
-  "click",
-  refazer
-);
-
-/* ======================================================
-   CRIAR LISTA
-====================================================== */
-
-function criarLista(
-  nome = null,
-  salvar = true
-) {
+function criarLista(nome = null, salvar = true) {
 
   contador++;
 
   listas.push({
-
-    id: Date.now() + Math.random(),
-
-    titulo:
-      nome || `LISTA ${contador}`,
-
-    jogadores: [
-      {
-        nome: "",
-        status: "?"
-      }
-    ]
-
+    id:        Date.now() + Math.random(),
+    titulo:    nome || `LISTA ${contador}`,
+    jogadores: [{ nome: "", status: "?" }]
   });
 
   if (salvar) {
-
     salvarHistorico();
-
     salvarGoogleSheets();
   }
 
@@ -329,185 +248,123 @@ function criarLista(
 }
 
 /* ======================================================
-   RENDER
+   RENDERIZAR
 ====================================================== */
 
 function renderizar() {
 
   listasContainer.innerHTML = "";
 
-  listas.forEach(
-    (lista, listaIndex) => {
+  listas.forEach((lista, listaIndex) => {
 
-      const div =
-        document.createElement("div");
+    const div = document.createElement("div");
+    div.className = "lista";
 
-      div.className = "lista";
+    div.innerHTML = `
 
-      div.innerHTML = `
+      <div class="listaHeader">
 
-        <div class="listaHeader">
+        <button
+          class="btnExcluirLista"
+          onclick="removerLista(${listaIndex})"
+        >×</button>
 
-          <button
-            class="btnExcluirLista"
-            onclick="removerLista(${listaIndex})"
-          >
-            ×
-          </button>
+        <input
+          class="listaTitulo"
+          value="${lista.titulo}"
+          onchange="alterarTitulo(${listaIndex}, this.value)"
+        >
 
-          <input
-            class="listaTitulo"
-            value="${lista.titulo}"
-            onchange="alterarTitulo(${listaIndex}, this.value)"
-          >
+      </div>
 
-        </div>
-
-        <table>
-
-          <thead>
-
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Nº</th>
+            <th>JOGADOR</th>
+            <th>STATUS</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-${listaIndex}">
+          ${lista.jogadores.map((jogador, jogadorIndex) => `
             <tr>
-              <th></th>
-              <th>Nº</th>
-              <th>JOGADOR</th>
-              <th>STATUS</th>
+              <td class="dragHandle">↕</td>
+              <td class="colunaNumero">${jogadorIndex + 1}</td>
+              <td>
+                <input
+                  type="text"
+                  value="${escHtml(jogador.nome)}"
+                  placeholder="Nome"
+                  onchange="alterarJogador(${listaIndex}, ${jogadorIndex}, 'nome', this.value)"
+                >
+              </td>
+              <td>
+                <input
+                  type="text"
+                  value="${escHtml(jogador.status)}"
+                  placeholder="?"
+                  onchange="alterarJogador(${listaIndex}, ${jogadorIndex}, 'status', this.value)"
+                >
+              </td>
             </tr>
+          `).join("")}
+        </tbody>
+      </table>
 
-          </thead>
+      <div class="acoes">
+        <button onclick="adicionarLinha(${listaIndex})">+</button>
+        <button onclick="removerLinha(${listaIndex})">−</button>
+      </div>
 
-          <tbody id="tbody-${listaIndex}">
+    `;
 
-            ${lista.jogadores.map(
-              (jogador, jogadorIndex) => `
+    listasContainer.appendChild(div);
+    ativarDragDrop(listaIndex);
+  });
+}
 
-              <tr>
-
-                <td class="dragHandle">
-                  ↕
-                </td>
-
-                <td class="colunaNumero">
-                  ${jogadorIndex + 1}
-                </td>
-
-                <td>
-                  <input
-                    type="text"
-                    value="${jogador.nome}"
-                    placeholder="Nome"
-                    onchange="alterarJogador(${listaIndex}, ${jogadorIndex}, 'nome', this.value)"
-                  >
-                </td>
-
-                <td>
-                  <input
-                    type="text"
-                    value="${jogador.status}"
-                    placeholder="?"
-                    onchange="alterarJogador(${listaIndex}, ${jogadorIndex}, 'status', this.value)"
-                  >
-                </td>
-
-              </tr>
-
-            `
-            ).join("")}
-
-          </tbody>
-
-        </table>
-
-        <div class="acoes">
-
-          <button onclick="adicionarLinha(${listaIndex})">
-            +
-          </button>
-
-          <button onclick="removerLinha(${listaIndex})">
-            −
-          </button>
-
-        </div>
-
-      `;
-
-      listasContainer.appendChild(div);
-
-      ativarDragDrop(listaIndex);
-
-    }
-  );
+/* Escapa caracteres HTML para evitar quebra no value="" */
+function escHtml(str) {
+  return (str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 /* ======================================================
    ALTERAÇÕES
 ====================================================== */
 
-function alterarTitulo(
-  listaIndex,
-  valor
-) {
-
+function alterarTitulo(listaIndex, valor) {
   salvarHistorico();
-
-  listas[listaIndex].titulo =
-    valor.toUpperCase();
-
+  listas[listaIndex].titulo = valor.toUpperCase();
   salvarGoogleSheets();
 }
 
-function alterarJogador(
-  listaIndex,
-  jogadorIndex,
-  campo,
-  valor
-) {
-
+function alterarJogador(listaIndex, jogadorIndex, campo, valor) {
   salvarHistorico();
-
-  listas[listaIndex]
-    .jogadores[jogadorIndex][campo] =
-      valor.toUpperCase();
-
+  listas[listaIndex].jogadores[jogadorIndex][campo] = valor.toUpperCase();
   salvarGoogleSheets();
 }
 
 /* ======================================================
-   LINHAS
+   ADICIONAR / REMOVER LINHAS
 ====================================================== */
 
 function adicionarLinha(listaIndex) {
-
   salvarHistorico();
-
-  listas[listaIndex].jogadores.push({
-
-    nome: "",
-
-    status: "?"
-
-  });
-
+  listas[listaIndex].jogadores.push({ nome: "", status: "?" });
   renderizar();
-
   salvarGoogleSheets();
 }
 
 function removerLinha(listaIndex) {
-
-  if (
-    listas[listaIndex]
-    .jogadores.length <= 1
-  ) return;
-
+  if (listas[listaIndex].jogadores.length <= 1) return;
   salvarHistorico();
-
-  listas[listaIndex]
-    .jogadores.pop();
-
+  listas[listaIndex].jogadores.pop();
   renderizar();
-
   salvarGoogleSheets();
 }
 
@@ -516,153 +373,90 @@ function removerLinha(listaIndex) {
 ====================================================== */
 
 function removerLista(listaIndex) {
-
   salvarHistorico();
-
   listas.splice(listaIndex, 1);
-
   renderizar();
-
   salvarGoogleSheets();
 }
 
 /* ======================================================
-   DRAG DROP
+   DRAG & DROP
 ====================================================== */
 
 function ativarDragDrop(listaIndex) {
 
-  const tbody =
-    document.getElementById(
-      `tbody-${listaIndex}`
-    );
+  const tbody = document.getElementById(`tbody-${listaIndex}`);
 
   new Sortable(tbody, {
-
-    handle: ".dragHandle",
-
-    group: "listasCompartilhadas",
-
-    animation: 180,
-
-    ghostClass: "sortable-ghost",
-
+    handle:      ".dragHandle",
+    group:       "listasCompartilhadas",
+    animation:   180,
+    ghostClass:  "sortable-ghost",
     chosenClass: "sortable-chosen",
 
-    onStart: () => {
-
-      salvarHistorico();
-    },
+    onStart: () => { salvarHistorico(); },
 
     onEnd: (evt) => {
 
-      const origem =
-        evt.from.id.split("-")[1];
+      const origem  = Number(evt.from.id.split("-")[1]);
+      const destino = Number(evt.to.id.split("-")[1]);
 
-      const destino =
-        evt.to.id.split("-")[1];
-
-      const item =
-        listas[origem]
-        .jogadores
-        .splice(evt.oldIndex, 1)[0];
-
-      listas[destino]
-        .jogadores
-        .splice(evt.newIndex, 0, item);
+      const item = listas[origem].jogadores.splice(evt.oldIndex, 1)[0];
+      listas[destino].jogadores.splice(evt.newIndex, 0, item);
 
       renderizar();
-
       salvarGoogleSheets();
     }
-
   });
 }
 
 /* ======================================================
-   COMPARTILHAR
+   COMPARTILHAR — WhatsApp
 ====================================================== */
 
-btnCompartilhar.addEventListener(
-  "click",
-  compartilharWhatsApp
-);
+btnCompartilhar.addEventListener("click", compartilharWhatsApp);
 
 function compartilharWhatsApp() {
 
   let texto = "";
 
-  texto +=
-    "================================\n";
-
-  texto +=
-    "    𝙲𝚄𝙿ÃO 𝙽ÃO 𝙵𝙸𝚂𝙲𝙰𝙻\n";
-
-  texto +=
-    "================================\n\n";
-
-  texto +=
-    `DATA: ${campoData.value}\n`;
-
-  texto +=
-    `LOCAL: ${campoLocal.value}\n`;
-
-  texto +=
-    `VALOR: ${campoValor.value}\n`;
-
-  texto +=
-    "================================\n\n";
+  texto += "================================\n";
+  texto += "    𝙲𝚄𝙿ÃO 𝙽ÃO 𝙵𝙸𝚂𝙲𝙰𝙻\n";
+  texto += "================================\n\n";
+  texto += `DATA: ${campoData.value}\n`;
+  texto += `LOCAL: ${campoLocal.value}\n`;
+  texto += `VALOR: ${campoValor.value}\n`;
+  texto += "================================\n\n";
 
   listas.forEach(lista => {
 
-    texto +=
-      `${lista.titulo}\n`;
+    texto += `${lista.titulo}\n`;
+    texto += "--------------------------------\n";
 
-    texto +=
-      "--------------------------------\n";
+    lista.jogadores.forEach((jogador, index) => {
 
-    lista.jogadores.forEach(
-      (jogador, index) => {
+      const numero = String(index + 1).padStart(2, "0");
+      const nome   = (jogador.nome || "").toUpperCase().padEnd(20, ".");
+      const status = jogador.status || "?";
 
-        const numero =
-          String(index + 1)
-          .padStart(2, '0');
-
-        const nome =
-          (jogador.nome || "")
-          .toUpperCase()
-          .padEnd(20, ".");
-
-        const status =
-          jogador.status || "?";
-
-        texto +=
-          `${numero} ${nome} ${status}\n`;
-
-      }
-    );
+      texto += `${numero} ${nome} ${status}\n`;
+    });
 
     texto += "\n";
-
   });
 
-  texto +=
-    "================================\n";
+  texto += "================================\n";
+  texto += "      𝙵𝚄𝚃𝙿ÃO 𝙾𝙽𝙻𝙸𝙽𝙴\n";
+  texto += "================================";
 
-  texto +=
-    "      𝙵𝚄𝚃𝙿ÃO 𝙾𝙽𝙻𝙸𝙽𝙴\n";
-
-  texto +=
-    "================================";
-
-  const url =
-    `https://wa.me/?text=${encodeURIComponent(texto)}`;
-
-  window.open(url, "_blank");
+  window.open(
+    `https://wa.me/?text=${encodeURIComponent(texto)}`,
+    "_blank"
+  );
 }
 
 /* ======================================================
-   START
+   INICIALIZAÇÃO
 ====================================================== */
 
 carregarGoogleSheets();
