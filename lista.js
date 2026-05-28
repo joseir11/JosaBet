@@ -147,8 +147,11 @@ async function carregarGoogleSheets() {
     const resposta =
       await fetch(API_URL);
 
-    const dados =
+    const respostaApi =
       await resposta.json();
+    
+    const dados =
+      respostaApi.dados || [];
 
     listas = [];
 
