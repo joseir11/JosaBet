@@ -117,6 +117,63 @@ function desfazer() {
   renderizar();
 
   salvarGoogleSheets();
+
+/* ======================================================
+   INFO PELADA
+====================================================== */
+
+function salvarInfoPelada() {
+
+  infoPelada.data =
+    campoData.value;
+
+  infoPelada.local =
+    campoLocal.value.toUpperCase();
+
+  infoPelada.valor =
+    campoValor.value;
+
+  localStorage.setItem(
+    "futpao_info",
+    JSON.stringify(infoPelada)
+  );
+}
+
+function carregarInfoPelada() {
+
+  const salvo =
+    localStorage.getItem("futpao_info");
+
+  if (!salvo) return;
+
+  infoPelada =
+    JSON.parse(salvo);
+
+  campoData.value =
+    infoPelada.data || "";
+
+  campoLocal.value =
+    infoPelada.local || "";
+
+  campoValor.value =
+    infoPelada.valor || "";
+}
+
+campoData.addEventListener(
+  "input",
+  salvarInfoPelada
+);
+
+campoLocal.addEventListener(
+  "input",
+  salvarInfoPelada
+);
+
+campoValor.addEventListener(
+  "input",
+  salvarInfoPelada
+);
+  
 }
 
 function refazer() {
@@ -562,6 +619,18 @@ function compartilharWhatsApp() {
 
   texto +=
     "================================\n\n";
+texto +=
+  `DATA: ${campoData.value}\n`;
+
+texto +=
+  `LOCAL: ${campoLocal.value}\n`;
+
+texto +=
+  `VALOR: ${campoValor.value}\n`;
+
+texto +=
+  "================================\n\n";
+  
 
   listas.forEach(lista => {
 
@@ -614,5 +683,7 @@ function compartilharWhatsApp() {
 /* ======================================================
    START
 ====================================================== */
+
+carregarInfoPelada();
 
 carregarGoogleSheets();
