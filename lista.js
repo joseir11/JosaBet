@@ -1,3 +1,4 @@
+```javascript
 const listasContainer =
   document.getElementById("listasContainer");
 
@@ -127,18 +128,8 @@ function refazer() {
 }
 
 /* ======================================================
-   INFO PELADA
-====================================================== */
-
-function salvarInfoPelada() {
-
-  salvarGoogleSheets();
-}
-
-/* ======================================================
    GOOGLE SHEETS
 ====================================================== */
-
 
 async function carregarGoogleSheets() {
 
@@ -149,85 +140,73 @@ async function carregarGoogleSheets() {
 
     const respostaApi =
       await resposta.json();
-    
+
     const dados =
       respostaApi.dados || [];
-
-    listas = [];
 
     /* =========================
        INFO
     ========================= */
 
-    if (dados.info) {
+    if (respostaApi.info) {
 
       campoData.value =
-        dados.info.DATA || "";
+        respostaApi.info.DATA || "";
 
       campoLocal.value =
-        dados.info.LOCAL || "";
+        respostaApi.info.LOCAL || "";
 
       campoValor.value =
-        dados.info.VALOR || "";
+        respostaApi.info.VALOR || "";
     }
 
     /* =========================
-       LISTAS
+       LIMPA LISTAS
     ========================= */
 
-    if (
-      dados.listas &&
-      Array.isArray(dados.listas)
-    ) {
+    listas = [];
 
-      dados.listas.forEach(item => {
+    /* =========================
+       MONTA LISTAS
+    ========================= */
 
-        let listaExistente =
-          listas.find(
-            l => l.titulo === item.lista
-          );
+    dados.forEach(item => {
 
-        if (!listaExistente) {
+      let listaExistente =
+        listas.find(
+          l => l.titulo === item.lista
+        );
 
-          listaExistente = {
+      if (!listaExistente) {
 
-            id:
-              Date.now() +
-              Math.random(),
+        listaExistente = {
 
-            titulo: item.lista,
+          id:
+            Date.now() +
+            Math.random(),
 
-            jogadores: []
+          titulo: item.lista,
 
-          };
+          jogadores: []
 
-          listas.push(
-            listaExistente
-          );
-        }
+        };
 
-        listaExistente.jogadores.push({
+        listas.push(
+          listaExistente
+        );
+      }
 
-          nome: item.jogador || "",
+      listaExistente.jogadores.push({
 
-          status: item.status || "?"
+        nome:
+          item.jogador || "",
 
-        });
+        status:
+          item.status || "?"
 
       });
 
-    }
-
-    renderizar();
-
-  } catch (erro) {
-
-    console.error(
-      "Erro ao carregar:",
-      erro
-    );
-  }
-}
+    });
 
     /* =========================
        LISTAS PADRÃO
@@ -309,18 +288,18 @@ async function salvarGoogleSheets() {
 ====================================================== */
 
 campoData.addEventListener(
-  "input",
-  salvarInfoPelada
+  "change",
+  salvarGoogleSheets
 );
 
 campoLocal.addEventListener(
-  "input",
-  salvarInfoPelada
+  "change",
+  salvarGoogleSheets
 );
 
 campoValor.addEventListener(
-  "input",
-  salvarInfoPelada
+  "change",
+  salvarGoogleSheets
 );
 
 /* ======================================================
@@ -722,3 +701,4 @@ function compartilharWhatsApp() {
 ====================================================== */
 
 carregarGoogleSheets();
+```
