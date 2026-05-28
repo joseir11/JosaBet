@@ -454,42 +454,59 @@ btnCompartilhar.addEventListener("click", compartilharWhatsApp);
 
 function compartilharWhatsApp() {
 
-  let texto = "";
+  const W = 32;
 
-  texto += "================================\n";
-  texto += "    𝙲𝚄𝙿ÃO 𝙽ÃO 𝙵𝙸𝚂𝙲𝙰𝙻\n";
-  texto += "================================\n\n";
-  texto += `DATA: ${campoData.value}\n`;
-  texto += `LOCAL: ${campoLocal.value}\n`;
-  texto += `VALOR: ${campoValor.value}\n`;
-  texto += "================================\n\n";
+  function centralizar(str) {
+    const espacos = Math.max(0, Math.floor((W - str.length) / 2));
+    return " ".repeat(espacos) + str;
+  }
+
+  const sep  = "=".repeat(W);
+  const sep2 = "-".repeat(W);
+
+  let corpo = "";
+
+  corpo += sep + "\n";
+  corpo += centralizar("CUPAO NAO FISCAL") + "\n";
+  corpo += sep + "\n";
+  corpo += "\n";
+  corpo += `DATA : ${campoData.value}\n`;
+  corpo += `LOCAL: ${campoLocal.value}\n`;
+  corpo += `VALOR: ${campoValor.value}\n`;
+  corpo += "\n";
+  corpo += sep + "\n";
+  corpo += "\n";
 
   listas.forEach(lista => {
 
-    texto += `${lista.titulo}\n`;
-    texto += "--------------------------------\n";
+    corpo += centralizar(lista.titulo) + "\n";
+    corpo += sep2 + "\n";
 
     lista.jogadores.forEach((jogador, index) => {
 
-      const numero = String(index + 1).padStart(2, "0");
-      const nome   = (jogador.nome || "").toUpperCase().padEnd(20, ".");
-      const status = jogador.status || "?";
+      const numero  = String(index + 1).padStart(2, "0");
+      const maxNome = W - 2 - 1 - 1 - 4;
+      const nome    = (jogador.nome || "").toUpperCase().padEnd(maxNome, ".");
+      const status  = (jogador.status || "?").toUpperCase();
 
-      texto += `${numero} ${nome} ${status}\n`;
+      corpo += `${numero} ${nome} ${status}\n`;
     });
 
-    texto += "\n";
+    corpo += "\n";
   });
 
-  texto += "================================\n";
-  texto += "      𝙵𝚄𝚃𝙿ÃO 𝙾𝙽𝙻𝙸𝙽𝙴\n";
-  texto += "================================";
+  corpo += sep + "\n";
+  corpo += centralizar("FUTPAO ONLINE") + "\n";
+  corpo += sep;
+
+  const texto = "```\n" + corpo + "\n```";
 
   window.open(
     `https://wa.me/?text=${encodeURIComponent(texto)}`,
     "_blank"
   );
 }
+
 
 /* ======================================================
    INICIALIZAÇÃO
