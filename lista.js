@@ -156,7 +156,6 @@ async function carregarGoogleSheets() {
       criarLista("SUPLENTES",       false);
       criarLista("GOLEIROS",        false);
       criarLista("GOLEIROS SUPLENTES", false);
-      criarLista("FORA",            false);
     }
 
   } catch (erro) {
@@ -169,7 +168,7 @@ async function carregarGoogleSheets() {
       criarLista("TITULARES", false);
       criarLista("SUPLENTES", false);
       criarLista("GOLEIROS",  false);
-      criarLista("FORA",      false);
+      criarLista("GOLEIROS SUPLENTES",      false);
     }
 
   } finally {
