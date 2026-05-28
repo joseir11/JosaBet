@@ -310,10 +310,11 @@ function renderizar() {
 
           <thead>
 
-            <tr>
-              <th>JOGADOR</th>
-              <th>STATUS</th>
-            </tr>
+	<tr>
+  		<th>Nº</th>
+  		<th>JOGADOR</th>
+  		<th>STATUS</th>
+	</tr>
 
           </thead>
 
@@ -322,27 +323,31 @@ function renderizar() {
             ${lista.jogadores.map(
               (jogador, jogadorIndex) => `
 
-              <tr>
+<tr>
 
-                <td>
-                  <input
-                    type="text"
-                    value="${jogador.nome}"
-                    placeholder="Nome"
-                    onchange="alterarJogador(${listaIndex}, ${jogadorIndex}, 'nome', this.value)"
-                  >
-                </td>
+  <td class="colunaNumero">
+    ${jogadorIndex + 1}
+  </td>
 
-                <td>
-                  <input
-                    type="text"
-                    value="${jogador.status}"
-                    placeholder="?"
-                    onchange="alterarJogador(${listaIndex}, ${jogadorIndex}, 'status', this.value)"
-                  >
-                </td>
+  <td>
+    <input
+      type="text"
+      value="${jogador.nome}"
+      placeholder="Nome"
+      onchange="alterarJogador(${listaIndex}, ${jogadorIndex}, 'nome', this.value)"
+    >
+  </td>
 
-              </tr>
+  <td>
+    <input
+      type="text"
+      value="${jogador.status}"
+      placeholder="?"
+      onchange="alterarJogador(${listaIndex}, ${jogadorIndex}, 'status', this.value)"
+    >
+  </td>
+
+</tr>
 
             `
             ).join("")}

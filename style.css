@@ -414,6 +414,28 @@ tbody input {
     transform: translateY(0px);
   }
 
+/* coluna número */
+
+.colunaNumero {
+
+  width: 42px;
+
+  text-align: center;
+
+  font-size: .8rem;
+
+  font-weight: 700;
+
+  color: #8a7763;
+
+  background: #efe7dc;
+}
+
+thead th:first-child {
+
+  width: 42px;
+}
+
 }
 
 }
