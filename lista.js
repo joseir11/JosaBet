@@ -327,7 +327,7 @@ function renderizar() {
               <tr>
 
                 <td class="dragHandle">
-                  ⋮⋮
+                  ↕
                 </td>
 
                 <td class="colunaNumero">
