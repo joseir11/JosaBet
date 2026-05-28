@@ -476,4 +476,72 @@ tbody input {
     height: 65px;
   }
 
+  /* infos pelada */
+
+.infoPelada {
+
+  display: flex;
+
+  gap: 14px;
+
+  flex-wrap: wrap;
+
+  margin-bottom: 22px;
+}
+
+.campoInfo {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+  flex: 1;
+
+  min-width: 180px;
+}
+
+.campoInfo label {
+
+  font-size: .75rem;
+
+  font-weight: 700;
+
+  color: #8a7763;
+
+  padding-left: 8px;
+}
+
+.campoInfo input {
+
+  border: none;
+
+  background: #ffffffcc;
+
+  border: 1px solid #e2dcd2;
+
+  border-radius: 18px;
+
+  padding: 12px 14px;
+
+  outline: none;
+
+  color: #5c4b3a;
+
+  font-size: .9rem;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,.04);
+}
+
+.campoInfo input:focus {
+
+  border-color: #c7b9a8;
+}
+
+.campoValor {
+
+  max-width: 140px;
+}
+
 }
