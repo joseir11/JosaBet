@@ -45,7 +45,7 @@ const API_URL =
 
 let listas     = [];
 let contador   = 0;
-let carregando = true;   // trava: bloqueia POST até o GET terminar
+let carregando = true;
 
 const undoStack = [];
 const redoStack = [];
@@ -64,7 +64,7 @@ btnPix.addEventListener("click", () => {
 });
 
 /* ======================================================
-   HISTÓRICO  (undo / redo)
+   HISTÓRICO
 ====================================================== */
 
 function salvarHistorico() {
@@ -105,89 +105,125 @@ btnDesfazer.addEventListener("click", desfazer);
 btnRefazer.addEventListener("click", refazer);
 
 /* ======================================================
-   GOOGLE SHEETS — GET
+   GOOGLE SHEETS — GET via JSONP
+   (evita bloqueio de CORS)
 ====================================================== */
 
-async function carregarGoogleSheets() {
+function carregarGoogleSheets() {
 
   carregando = true;
 
-  try {
+  /* Cria tag <script> dinâmica com callback JSONP */
+  const nomeCallback = "jsonpCallback_" + Date.now();
 
-    /* Apps Script exige redirect follow — fetch padrão já faz isso,
-       mas precisamos garantir que não usamos no-cors no GET,
-       pois precisamos LER a resposta. */
-    const resposta = await fetch(API_URL, {
-      method:   "GET",
-      redirect: "follow"
-    });
+  window[nomeCallback] = function(json) {
 
-    const json = await resposta.json();
+    try {
 
-    /* ---------- INFO ---------- */
-    if (json.info) {
-      campoData.value  = json.info.DATA  || "";
-      campoLocal.value = json.info.LOCAL || "";
-      campoValor.value = json.info.VALOR || "";
+      /* ---------- INFO ---------- */
+      if (json.info) {
+        campoData.value  = json.info.DATA  || "";
+        campoLocal.value = json.info.LOCAL || "";
+        campoValor.value = json.info.VALOR || "";
+      }
+
+      /* ---------- LISTAS ---------- */
+      const listasApi = json.listas || [];
+
+      if (listasApi.length > 0) {
+
+        listas = listasApi.map(l => ({
+          id:        Date.now() + Math.random(),
+          titulo:    l.titulo || "",
+          jogadores: (l.jogadores || []).map(j => ({
+            nome:   j.nome   || "",
+            status: j.status || "?"
+          }))
+        }));
+
+      } else {
+
+        listas = [];
+        criarLista("TITULARES",        false);
+        criarLista("SUPLENTES",        false);
+        criarLista("GOLEIROS",         false);
+        criarLista("GOLEIROS SUPLENTES", false);
+        criarLista("FORA",             false);
+      }
+
+    } catch (erro) {
+
+      console.error("Erro ao processar dados:", erro);
+
+    } finally {
+
+      salvarHistorico();
+      renderizar();
+      carregando = false;
+
+      /* Remove o script e limpa o callback */
+      delete window[nomeCallback];
+      const tag = document.getElementById(nomeCallback);
+      if (tag) tag.remove();
+    }
+  };
+
+  /* Timeout de segurança — se o script não responder em 10s */
+  const timeout = setTimeout(() => {
+
+    if (window[nomeCallback]) {
+
+      console.error("Timeout ao carregar dados da planilha.");
+
+      delete window[nomeCallback];
+
+      if (listas.length === 0) {
+        criarLista("TITULARES", false);
+        criarLista("SUPLENTES", false);
+        criarLista("GOLEIROS",  false);
+        criarLista("FORA",      false);
+      }
+
+      salvarHistorico();
+      renderizar();
+      carregando = false;
     }
 
-    /* ---------- LISTAS ----------
-       O Apps Script retorna:
-       { listas: [ { titulo, jogadores: [{nome, status}] } ], info: {...} }
-    -------------------------------- */
-    const listasApi = json.listas || [];
+  }, 10000);
 
-    if (listasApi.length > 0) {
+  /* Injeta o <script> com ?callback=nomeCallback */
+  const script = document.createElement("script");
+  script.id  = nomeCallback;
+  script.src = API_URL + "?callback=" + nomeCallback;
 
-      listas = listasApi.map(l => ({
-        id:       Date.now() + Math.random(),
-        titulo:   l.titulo   || "",
-        jogadores: (l.jogadores || []).map(j => ({
-          nome:   j.nome   || "",
-          status: j.status || "?"
-        }))
-      }));
+  script.onerror = () => {
 
-    } else {
+    clearTimeout(timeout);
+    console.error("Erro ao carregar script JSONP.");
 
-      /* Planilha vazia → cria estrutura padrão SEM salvar */
-      listas = [];
-      criarLista("TITULARES",       false);
-      criarLista("SUPLENTES",       false);
-      criarLista("GOLEIROS",        false);
-      criarLista("GOLEIROS SUPLENTES", false);
-    }
+    delete window[nomeCallback];
 
-  } catch (erro) {
-
-    console.error("Erro ao carregar da planilha:", erro);
-
-    /* Em caso de falha de rede, exibe estrutura padrão vazia
-       mas NÃO salva — para não apagar dados existentes */
     if (listas.length === 0) {
       criarLista("TITULARES", false);
       criarLista("SUPLENTES", false);
       criarLista("GOLEIROS",  false);
-      criarLista("GOLEIROS SUPLENTES",      false);
+      criarLista("FORA",      false);
     }
-
-  } finally {
 
     salvarHistorico();
     renderizar();
-
-    /* Libera o POST somente após o GET concluir (com ou sem erro) */
     carregando = false;
-  }
+  };
+
+  document.head.appendChild(script);
 }
 
 /* ======================================================
-   GOOGLE SHEETS — POST
+   GOOGLE SHEETS — POST via fetch
 ====================================================== */
 
 async function salvarGoogleSheets() {
 
-  /* Nunca salva enquanto o carregamento inicial não terminou */
   if (carregando) return;
 
   try {
@@ -207,7 +243,7 @@ async function salvarGoogleSheets() {
 
   } catch (erro) {
 
-    console.error("Erro ao salvar na planilha:", erro);
+    console.error("Erro ao salvar:", erro);
   }
 }
 
@@ -270,7 +306,7 @@ function renderizar() {
 
         <input
           class="listaTitulo"
-          value="${lista.titulo}"
+          value="${escHtml(lista.titulo)}"
           onchange="alterarTitulo(${listaIndex}, this.value)"
         >
 
@@ -323,7 +359,6 @@ function renderizar() {
   });
 }
 
-/* Escapa caracteres HTML para evitar quebra no value="" */
 function escHtml(str) {
   return (str || "")
     .replace(/&/g, "&amp;")
@@ -349,7 +384,7 @@ function alterarJogador(listaIndex, jogadorIndex, campo, valor) {
 }
 
 /* ======================================================
-   ADICIONAR / REMOVER LINHAS
+   LINHAS
 ====================================================== */
 
 function adicionarLinha(listaIndex) {
@@ -400,7 +435,9 @@ function ativarDragDrop(listaIndex) {
       const origem  = Number(evt.from.id.split("-")[1]);
       const destino = Number(evt.to.id.split("-")[1]);
 
-      const item = listas[origem].jogadores.splice(evt.oldIndex, 1)[0];
+      const item =
+        listas[origem].jogadores.splice(evt.oldIndex, 1)[0];
+
       listas[destino].jogadores.splice(evt.newIndex, 0, item);
 
       renderizar();
