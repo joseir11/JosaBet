@@ -461,15 +461,23 @@ function compartilharWhatsApp() {
     return " ".repeat(espacos) + str;
   }
 
+  /* Remove acentos para calcular largura visual correta */
+  function semAcento(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
   const sep  = "=".repeat(W);
   const sep2 = "-".repeat(W);
 
   let corpo = "";
 
+  /* Cabecalho */
   corpo += sep + "\n";
   corpo += centralizar("CUPAO NAO FISCAL") + "\n";
   corpo += sep + "\n";
   corpo += "\n";
+
+  /* DATA LOCAL VALOR — alinhados a esquerda, sem justificar */
   corpo += `DATA : ${campoData.value}\n`;
   corpo += `LOCAL: ${campoLocal.value}\n`;
   corpo += `VALOR: ${campoValor.value}\n`;
@@ -479,26 +487,36 @@ function compartilharWhatsApp() {
 
   listas.forEach(lista => {
 
-    corpo += centralizar(lista.titulo) + "\n";
+    corpo += centralizar(semAcento(lista.titulo)) + "\n";
     corpo += sep2 + "\n";
 
     lista.jogadores.forEach((jogador, index) => {
 
-      const numero  = String(index + 1).padStart(2, "0");
-      const maxNome = W - 2 - 1 - 1 - 4;
-      const nome    = (jogador.nome || "").toUpperCase().padEnd(maxNome, ".");
-      const status  = (jogador.status || "?").toUpperCase();
+      const numero = String(index + 1).padStart(2, "0");
 
-      corpo += `${numero} ${nome} ${status}\n`;
+      /* Usa nome sem acento para medir largura visual */
+      const nomeRaw    = (jogador.nome || "").toUpperCase();
+      const nomeSemAc  = semAcento(nomeRaw);
+      const status     = (jogador.status || "?").toUpperCase();
+
+      /* Largura disponível: W - "00 " (3) - " " (1) - status (fixo 4 com padding) */
+      const maxNome = W - 3 - 1 - 4;
+      const pontos  = Math.max(1, maxNome - nomeSemAc.length);
+
+      const linha = `${numero} ${nomeRaw}${".".repeat(pontos)} ${status}`;
+
+      corpo += linha + "\n";
     });
 
     corpo += "\n";
   });
 
+  /* Rodape */
   corpo += sep + "\n";
   corpo += centralizar("FUTPAO ONLINE") + "\n";
   corpo += sep;
 
+  /* Bloco monospacado do WhatsApp */
   const texto = "```\n" + corpo + "\n```";
 
   window.open(
